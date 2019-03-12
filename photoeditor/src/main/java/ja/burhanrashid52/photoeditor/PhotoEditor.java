@@ -6,6 +6,7 @@ import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.support.annotation.ColorInt;
@@ -26,7 +27,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -668,7 +671,15 @@ public class PhotoEditor implements BrushViewChangeListener {
                            @NonNull final SaveSettings saveSettings,
                            @NonNull final OnSaveListener onSaveListener) {
         Log.d(TAG, "Image Path: " + imagePath);
-        parentView.saveFilter(new OnSaveBitmap() {
+        Bitmap bitmap = getBitmapByView(parentView, imagePath);
+        if (bitmap != null) {
+            //Clear all views if its enabled in save settings
+            if (saveSettings.isClearViewsEnabled()) clearAllViews();
+            onSaveListener.onSuccess(imagePath);
+        } else {
+            onSaveListener.onFailure(null);
+        }
+        /*parentView.saveFilter(new OnSaveBitmap() {
             @Override
             public void onBitmapReady(Bitmap saveBitmap) {
                 new AsyncTask<String, String, Exception>() {
@@ -724,7 +735,38 @@ public class PhotoEditor implements BrushViewChangeListener {
             public void onFailure(Exception e) {
                 onSaveListener.onFailure(e);
             }
-        });
+        });*/
+    }
+
+    public static Bitmap getBitmapByView(PhotoEditorView scrollView, String filePath) {
+        int h = 0;
+        Bitmap bitmap = null;
+        //get the actual height of scrollview
+        for (int i = 0; i < scrollView.getChildCount(); i++) {
+            h += scrollView.getChildAt(i).getHeight();
+            scrollView.getChildAt(i).setBackgroundResource(android.R.color.transparent);
+        }
+        // create bitmap with target size
+        bitmap = Bitmap.createBitmap(scrollView.getWidth(), h,
+                Bitmap.Config.ARGB_8888);
+        final Canvas canvas = new Canvas(bitmap);
+        scrollView.draw(canvas);
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(filePath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (null != out) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                out.flush();
+                out.close();
+            }
+        } catch (IOException e) {
+            // TODO: handle exception
+        }
+        return bitmap;
     }
 
     /**

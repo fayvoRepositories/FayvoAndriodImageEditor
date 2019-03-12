@@ -425,7 +425,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 //                        mPhotoEditorView.getSource().setImageURI(Uri.fromFile(new File(imagePath)));
 
 
-//                        ffmpeg -i inputVideo.mp4 -i yourImage.png -filter_complex "overlay=5:5" -codec:a copy outputVideo.mp4
+/*//                        ffmpeg -i inputVideo.mp4 -i yourImage.png -filter_complex "overlay=5:5" -codec:a copy outputVideo.mp4
                         String command = "ffmpeg -i " + videoPath + " -i " + imagePath + " " +
                                 "-filter_complex \"overlay=5:5\" -codec:a " +
                                 " copy " + videoPath;
@@ -434,7 +434,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                         Log.d("ffmpeg commond ", Arrays.toString(cmd));
                         if (cmd.length != 0) {
                             execFFmpegBinary(cmd);
-                        }
+                        }*/
                     }
 
                     @Override
