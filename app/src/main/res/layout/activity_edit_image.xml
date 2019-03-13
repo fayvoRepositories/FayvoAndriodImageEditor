@@ -204,7 +204,8 @@
             android:layout_marginBottom="8dp"
             android:contentDescription="TODO"
             android:orientation="vertical"
-            android:visibility="gone"
+            android:visibility="visible"
+            android:background="@color/brown_color_picker"
             app:layout_constraintBottom_toTopOf="@+id/ivSticker"
             app:layout_constraintEnd_toEndOf="@id/layoutTop">
 

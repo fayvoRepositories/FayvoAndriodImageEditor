@@ -133,11 +133,12 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 //.setDefaultTextTypeface(mTextRobotoTf)
                 //.setDefaultEmojiTypeface(mEmojiTypeFace)
                 .build(); // build photo editor sdk
-
+        ivDelete.setOnDragListener(new DragDropOnDragListener(mPhotoEditor));
         mPhotoEditor.setOnPhotoEditorListener(this);
         loadFFMpegBinary();
         //Set Image Dynamically
         // mPhotoEditorView.getSource().setImageResource(R.drawable.color_palette);
+
     }
 
     private void loadFFMpegBinary() {
@@ -253,7 +254,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
         ivDelete = findViewById(R.id.ivDelete);
 
-        ivDelete.setOnDragListener(new DragDropOnDragListener(EditImageActivity.this, ivDelete));
+
 
         imgUndo = findViewById(R.id.imgUndo);
         imgUndo.setOnClickListener(this);
@@ -387,7 +388,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 textEditorDialogFragment.setOnTextEditorListener(new TextEditorDialogFragment.TextEditor() {
                     @Override
                     public void onDone(String inputText, int colorCode) {
-                        mPhotoEditor.addText(inputText, colorCode);
+                        mPhotoEditor.addText(inputText, colorCode, ivDelete);
                         mTxtCurrentTool.setText(R.string.label_text);
                     }
                 });
@@ -495,14 +496,14 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
     @Override
     public void onEmojiClick(String emojiUnicode) {
-        mPhotoEditor.addEmoji(emojiUnicode);
+        mPhotoEditor.addEmoji(emojiUnicode, ivDelete);
         mTxtCurrentTool.setText(R.string.label_emoji);
 
     }
 
     @Override
     public void onStickerClick(Bitmap bitmap) {
-        mPhotoEditor.addImage(bitmap);
+        mPhotoEditor.addImage(bitmap, ivDelete);
         mTxtCurrentTool.setText(R.string.label_sticker);
     }
 
@@ -557,7 +558,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 textEditorDialogFragment.setOnTextEditorListener(new TextEditorDialogFragment.TextEditor() {
                     @Override
                     public void onDone(String inputText, int colorCode) {
-                        mPhotoEditor.addText(inputText, colorCode);
+                        mPhotoEditor.addText(inputText, colorCode, ivDelete);
                         mTxtCurrentTool.setText(R.string.label_text);
                     }
                 });
@@ -645,6 +646,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         animate.setDuration(500);
         animate.setFillAfter(true);
         view.startAnimation(animate);
+        view.setVisibility(View.GONE);
+        view.clearAnimation();
     }
 
 }

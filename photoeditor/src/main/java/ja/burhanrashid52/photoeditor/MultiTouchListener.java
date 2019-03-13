@@ -1,7 +1,5 @@
 package ja.burhanrashid52.photoeditor;
 
-import android.content.ClipData;
-import android.content.ClipDescription;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -11,7 +9,6 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 /**
  * Created on 18/01/2017.

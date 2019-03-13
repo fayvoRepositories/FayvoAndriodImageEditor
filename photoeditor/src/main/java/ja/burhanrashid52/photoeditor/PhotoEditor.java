@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -81,27 +82,49 @@ public class PhotoEditor implements BrushViewChangeListener {
      *
      * @param desiredImage bitmap image you want to add
      */
-    public void addImage(Bitmap desiredImage) {
+    public void addImage(Bitmap desiredImage, final LinearLayout delete) {
         final View imageRootView = getLayout(ViewType.IMAGE);
         final ImageView imageView = imageRootView.findViewById(R.id.imgPhotoEditorImage);
         final FrameLayout frmBorder = imageRootView.findViewById(R.id.frmBorder);
         final ImageView imgClose = imageRootView.findViewById(R.id.imgPhotoEditorClose);
 
+        imgClose.setVisibility(View.GONE);
+        frmBorder.setBackgroundResource(0);
         imageView.setImageBitmap(desiredImage);
 
         MultiTouchListener multiTouchListener = getMultiTouchListener();
         multiTouchListener.setOnGestureControl(new MultiTouchListener.OnGestureControl() {
             @Override
             public void onClick() {
-                boolean isBackgroundVisible = frmBorder.getTag() != null && (boolean) frmBorder.getTag();
-                frmBorder.setBackgroundResource(isBackgroundVisible ? 0 : R.drawable.rounded_border_tv);
-                imgClose.setVisibility(isBackgroundVisible ? View.GONE : View.VISIBLE);
-                frmBorder.setTag(!isBackgroundVisible);
+//                boolean isBackgroundVisible = frmBorder.getTag() != null && (boolean) frmBorder.getTag();
+//                frmBorder.setBackgroundResource(isBackgroundVisible ? 0 : R.drawable.rounded_border_tv);
+//                imgClose.setVisibility(isBackgroundVisible ? View.GONE : View.VISIBLE);
+//                frmBorder.setTag(!isBackgroundVisible);
             }
 
             @Override
             public void onLongClick() {
+                {
+                    delete.setVisibility(View.VISIBLE);
+                    // Create a new ClipData.Item from the View object's tag
+                    ClipData.Item item = new ClipData.Item((CharSequence) imageRootView.getTag().toString());
 
+                    // Create a new ClipData using the tag as a label, the plain text MIME type, and
+                    // the already-created item. This will create a new ClipDescription object within the
+                    // ClipData, and set its MIME type entry to "text/plain"
+                    String[] mimeTypes = {ClipDescription.MIMETYPE_TEXT_PLAIN};
+                    ClipData data = new ClipData(imageRootView.getTag().toString(), mimeTypes, item);
+
+                    // Instantiates the drag shadow builder.
+                    View.DragShadowBuilder dragshadow = new View.DragShadowBuilder(imageRootView);
+
+                    // Starts the drag
+                    imageRootView.startDrag(data       // data to be dragged
+                            , dragshadow  // drag shadow
+                            , imageRootView            // local data about the drag and drop operation
+                            , 0          // flags set to 0 because not using currently
+                    );
+                }
             }
         });
 
@@ -119,8 +142,8 @@ public class PhotoEditor implements BrushViewChangeListener {
      * @param colorCodeTextView text color to be displayed
      */
     @SuppressLint("ClickableViewAccessibility")
-    public void addText(String text, final int colorCodeTextView) {
-        addText(null, text, colorCodeTextView);
+    public void addText(String text, final int colorCodeTextView, View delete) {
+        addText(null, text, colorCodeTextView, delete);
     }
 
     /**
@@ -132,7 +155,7 @@ public class PhotoEditor implements BrushViewChangeListener {
      * @param colorCodeTextView text color to be displayed
      */
     @SuppressLint("ClickableViewAccessibility")
-    public void addText(@Nullable Typeface textTypeface, String text, final int colorCodeTextView) {
+    public void addText(@Nullable Typeface textTypeface, String text, final int colorCodeTextView, final View delete) {
         brushDrawingView.setBrushDrawingMode(false);
         final View textRootView = getLayout(ViewType.TEXT);
         final TextView textInputTv = textRootView.findViewById(R.id.tvPhotoEditorText);
@@ -172,6 +195,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                     mOnPhotoEditorListener.onEditTextChangeListener(textRootView, textInput, currentTextColor);
                 }*/
                 {
+                    delete.setVisibility(View.VISIBLE);
                     // Create a new ClipData.Item from the View object's tag
                     ClipData.Item item = new ClipData.Item((CharSequence) textRootView.getTag().toString());
 
@@ -240,8 +264,8 @@ public class PhotoEditor implements BrushViewChangeListener {
      *
      * @param emojiName unicode in form of string to display emoji
      */
-    public void addEmoji(String emojiName) {
-        addEmoji(null, emojiName);
+    public void addEmoji(String emojiName,  LinearLayout delete) {
+        addEmoji(null, emojiName, delete);
     }
 
     /**
@@ -251,7 +275,7 @@ public class PhotoEditor implements BrushViewChangeListener {
      * @param emojiTypeface typeface for custom font to show emoji unicode in specific font
      * @param emojiName     unicode in form of string to display emoji
      */
-    public void addEmoji(Typeface emojiTypeface, String emojiName) {
+    public void addEmoji(Typeface emojiTypeface, String emojiName, final LinearLayout delete) {
         brushDrawingView.setBrushDrawingMode(false);
         final View emojiRootView = getLayout(ViewType.EMOJI);
         final TextView emojiTextView = emojiRootView.findViewById(R.id.tvPhotoEditorText);
@@ -264,17 +288,40 @@ public class PhotoEditor implements BrushViewChangeListener {
         emojiTextView.setTextSize(56);
         emojiTextView.setText(emojiName);
         MultiTouchListener multiTouchListener = getMultiTouchListener();
+        imgClose.setVisibility(View.GONE);
+        frmBorder.setBackgroundResource(0);
         multiTouchListener.setOnGestureControl(new MultiTouchListener.OnGestureControl() {
             @Override
             public void onClick() {
-                boolean isBackgroundVisible = frmBorder.getTag() != null && (boolean) frmBorder.getTag();
-                frmBorder.setBackgroundResource(isBackgroundVisible ? 0 : R.drawable.rounded_border_tv);
-                imgClose.setVisibility(isBackgroundVisible ? View.GONE : View.VISIBLE);
-                frmBorder.setTag(!isBackgroundVisible);
+//                boolean isBackgroundVisible = frmBorder.getTag() != null && (boolean) frmBorder.getTag();
+//                frmBorder.setBackgroundResource(isBackgroundVisible ? 0 : R.drawable.rounded_border_tv);
+//                imgClose.setVisibility(isBackgroundVisible ? View.GONE : View.VISIBLE);
+//                frmBorder.setTag(!isBackgroundVisible);
             }
 
             @Override
             public void onLongClick() {
+                {
+                    delete.setVisibility(View.VISIBLE);
+                    // Create a new ClipData.Item from the View object's tag
+                    ClipData.Item item = new ClipData.Item((CharSequence) emojiRootView.getTag().toString());
+
+                    // Create a new ClipData using the tag as a label, the plain text MIME type, and
+                    // the already-created item. This will create a new ClipDescription object within the
+                    // ClipData, and set its MIME type entry to "text/plain"
+                    String[] mimeTypes = {ClipDescription.MIMETYPE_TEXT_PLAIN};
+                    ClipData data = new ClipData(emojiRootView.getTag().toString(), mimeTypes, item);
+
+                    // Instantiates the drag shadow builder.
+                    View.DragShadowBuilder dragshadow = new View.DragShadowBuilder(emojiRootView);
+
+                    // Starts the drag
+                    emojiRootView.startDrag(data       // data to be dragged
+                            , dragshadow  // drag shadow
+                            , emojiRootView            // local data about the drag and drop operation
+                            , 0          // flags set to 0 because not using currently
+                    );
+                }
             }
         });
         emojiRootView.setOnTouchListener(multiTouchListener);
@@ -484,12 +531,12 @@ public class PhotoEditor implements BrushViewChangeListener {
         }
     }*/
 
-    private void viewUndo(View removedView, ViewType viewType) {
+    public void viewUndo(View removedView, ViewType viewType) {
         if (addedViews.size() > 0) {
             if (addedViews.contains(removedView)) {
                 parentView.removeView(removedView);
                 addedViews.remove(removedView);
-                redoViews.add(removedView);
+//                redoViews.add(removedView);
                 if (mOnPhotoEditorListener != null) {
                     mOnPhotoEditorListener.onRemoveViewListener(addedViews.size());
                     mOnPhotoEditorListener.onRemoveViewListener(viewType, addedViews.size());
@@ -671,15 +718,15 @@ public class PhotoEditor implements BrushViewChangeListener {
                            @NonNull final SaveSettings saveSettings,
                            @NonNull final OnSaveListener onSaveListener) {
         Log.d(TAG, "Image Path: " + imagePath);
-        Bitmap bitmap = getBitmapByView(parentView, imagePath);
+        /*Bitmap bitmap = getBitmapByView(parentView, imagePath);
         if (bitmap != null) {
             //Clear all views if its enabled in save settings
             if (saveSettings.isClearViewsEnabled()) clearAllViews();
             onSaveListener.onSuccess(imagePath);
         } else {
             onSaveListener.onFailure(null);
-        }
-        /*parentView.saveFilter(new OnSaveBitmap() {
+        }*/
+        parentView.saveFilter(new OnSaveBitmap() {
             @Override
             public void onBitmapReady(Bitmap saveBitmap) {
                 new AsyncTask<String, String, Exception>() {
@@ -735,7 +782,7 @@ public class PhotoEditor implements BrushViewChangeListener {
             public void onFailure(Exception e) {
                 onSaveListener.onFailure(e);
             }
-        });*/
+        });
     }
 
     public static Bitmap getBitmapByView(PhotoEditorView scrollView, String filePath) {

@@ -2,14 +2,8 @@ package ja.burhanrashid52.photoeditor;
 
 import android.content.ClipData;
 import android.content.ClipDescription;
-import android.content.Context;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.view.DragEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.Toast;
 
 /**
  * Created by Administrator on 4/20/2018.
@@ -17,11 +11,10 @@ import android.widget.Toast;
 
 public class DragDropOnDragListener implements View.OnDragListener {
 
-    private Context context = null;
-    private LinearLayout ivDelete;
-    public DragDropOnDragListener(Context context, LinearLayout ivDelete) {
-        this.context = context;
-        this.ivDelete = ivDelete;
+    private PhotoEditor mPhotoEditor;
+
+    public DragDropOnDragListener(PhotoEditor mPhotoEditor) {
+        this.mPhotoEditor = mPhotoEditor;
     }
 
     @Override
@@ -29,10 +22,9 @@ public class DragDropOnDragListener implements View.OnDragListener {
 
         // Get the drag drop action.
         int dragAction = dragEvent.getAction();
-
         if (dragAction == dragEvent.ACTION_DRAG_STARTED) {
+            view.setVisibility(View.VISIBLE);
 
-            ivDelete.setVisibility(View.VISIBLE);
             // Check whether the dragged view can be placed in this target view or not.
 
             ClipDescription clipDescription = dragEvent.getClipDescription();
@@ -44,19 +36,19 @@ public class DragDropOnDragListener implements View.OnDragListener {
 
             }
         } else if (dragAction == dragEvent.ACTION_DRAG_ENTERED) {
-            ivDelete.setVisibility(View.VISIBLE);
+            view.setVisibility(View.VISIBLE);
             // When the being dragged view enter the target view, change the target view background color.
 //            changeTargetViewBackground(view, Color.GREEN);
 
             return true;
         } else if (dragAction == dragEvent.ACTION_DRAG_EXITED) {
-            ivDelete.setVisibility(View.GONE);
+            view.setVisibility(View.GONE);
             // When the being dragged view exit target view area, clear the background color.
 //            resetTargetViewBackground(view);
 
             return true;
         } else if (dragAction == dragEvent.ACTION_DRAG_ENDED) {
-            ivDelete.setVisibility(View.GONE);
+            view.setVisibility(View.GONE);
             // When the drop ended reset target view background color.
 //            resetTargetViewBackground(view);
 
@@ -66,15 +58,16 @@ public class DragDropOnDragListener implements View.OnDragListener {
 
             // result is true means drag and drop action success.
             if (result) {
-                Toast.makeText(context, "Drag and drop action complete successfully.", Toast.LENGTH_LONG).show();
+//                Toast.makeText(context, "Drag and drop action complete successfully.", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(context, "Drag and drop action failed.", Toast.LENGTH_LONG).show();
+//                Toast.makeText(context, "Drag and drop action failed.", Toast.LENGTH_LONG).show();
                 view.setVisibility(View.VISIBLE);
             }
 
             return true;
 
         } else if (dragAction == dragEvent.ACTION_DROP) {
+//            ivDelete.setVisibility(View.GONE);
             // When drop action happened.
 //            view.setVisibility(View.GONE);
             // Get clip data in the drag event first.
@@ -82,6 +75,7 @@ public class DragDropOnDragListener implements View.OnDragListener {
 
             // Get drag and drop item count.
             int itemCount = clipData.getItemCount();
+
 
             // If item count bigger than 0.
             if (itemCount > 0) {
@@ -92,7 +86,7 @@ public class DragDropOnDragListener implements View.OnDragListener {
                 String dragDropString = item.getText().toString();
 
                 // Show a toast popup.
-                Toast.makeText(context, "Dragged object is a " + dragDropString, Toast.LENGTH_LONG).show();
+//                Toast.makeText(context, "Dragged object is a " + dragDropString, Toast.LENGTH_LONG).show();
 
                 // Reset target view background color.
                 resetTargetViewBackground(view);
@@ -100,17 +94,20 @@ public class DragDropOnDragListener implements View.OnDragListener {
                 // Get dragged view object from drag event object.
                 View srcView = (View) dragEvent.getLocalState();
                 // Get dragged view's parent view group.
-                ViewGroup owner = (ViewGroup) srcView.getParent();
+//                ViewGroup owner = (ViewGroup) srcView.getParent();
                 // Remove source view from original parent view group.
-                owner.removeView(srcView);
+//                owner.removeView(srcView);
 
                 // The drop target view is a LinearLayout object so cast the view object to it's type.
-                LinearLayout newContainer = (LinearLayout) view;
+//                LinearLayout newContainer = (LinearLayout) view;
                 // Add the dragged view in the new container.
-                newContainer.addView(srcView);
+//                newContainer.addView(srcView);
                 // Make the dragged view object visible.
-                srcView.setVisibility(View.VISIBLE);
+//                srcView.setVisibility(View.VISIBLE);
 
+                mPhotoEditor.viewUndo(srcView, ViewType.TEXT);
+
+                view.setVisibility(View.GONE);
                 // Returns true to make DragEvent.getResult() value to true.
                 return true;
             }
@@ -120,7 +117,7 @@ public class DragDropOnDragListener implements View.OnDragListener {
             return false;
         }else
         {
-            ivDelete.setVisibility(View.GONE);
+            view.setVisibility(View.GONE);
 //            Toast.makeText(context, "Drag and drop unknow action type.", Toast.LENGTH_LONG).show();
         }
 
@@ -134,19 +131,9 @@ public class DragDropOnDragListener implements View.OnDragListener {
 //        view.getBackground().clearColorFilter();
 
         // Redraw the target view use original color.
-        view.invalidate();
+//        view.invalidate();
     }
 
-    public class TransformInfo {
-        float deltaX;
-        float deltaY;
-        float deltaScale;
-        float deltaAngle;
-        float pivotX;
-        float pivotY;
-        float minimumScale;
-        float maximumScale;
-    }
 
     /* Change drag and drop target view's background color. */
     private void changeTargetViewBackground(View view, int color) {
