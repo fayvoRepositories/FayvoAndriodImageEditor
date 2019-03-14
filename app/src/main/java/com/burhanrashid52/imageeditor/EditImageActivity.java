@@ -363,17 +363,17 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 break;
 
             case R.id.imgGallery:
-                /*Intent intent = new Intent();
+                Intent intent = new Intent();
                 intent.setType("image/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_REQUEST);*/
-                new MaterialFilePicker()
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_REQUEST);
+               /* new MaterialFilePicker()
                         .withActivity(this)
                         .withRequestCode(PICK_REQUEST)
 //                        .withFilter(Pattern.compile(".*\\.mp4$")) // Filtering files and directories by file name using regexp
                         .withFilterDirectories(true) // Set directories filterable (false by default)
                         .withHiddenFiles(true) // Show hidden files and folders
-                        .start();
+                        .start();*/
                 break;
             case R.id.ivBrush:
                 mPhotoEditor.setBrushDrawingMode(true);
@@ -423,7 +423,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     public void onSuccess(@NonNull String imagePath) {
                         hideLoading();
                         showSnackbar("Image Saved Successfully");
-//                        mPhotoEditorView.getSource().setImageURI(Uri.fromFile(new File(imagePath)));
+                        mPhotoEditorView.getSource().setImageURI(Uri.fromFile(new File(imagePath)));
 
 
 /*//                        ffmpeg -i inputVideo.mp4 -i yourImage.png -filter_complex "overlay=5:5" -codec:a copy outputVideo.mp4
@@ -459,22 +459,22 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 case CAMERA_REQUEST:
                     mPhotoEditor.clearAllViews();
                     Bitmap photo = (Bitmap) data.getExtras().get("data");
-                    mPhotoEditorView.getSource().setImageBitmap(photo);
+                    mPhotoEditorView.setImageBitmap(photo);
                     break;
                 case PICK_REQUEST:
-                    /*try {
+                    try {
                         mPhotoEditor.clearAllViews();
                         Uri uri = data.getData();
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                        mPhotoEditorView.getSource().setImageBitmap(bitmap);
+                        mPhotoEditorView.setImageBitmap(bitmap);
                     } catch (IOException e) {
                         e.printStackTrace();
-                    }*/
+                    }
 
-                    videoPath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
+                    /*videoPath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
 //                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                     videoView.setVideoPath(videoPath);
-                    videoView.start();
+                    videoView.start();*/
                     break;
             }
         }

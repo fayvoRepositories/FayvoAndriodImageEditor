@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    tools:context=".crop.CropActivity">
+
+    <com.oginotihiro.cropview.CropView
+        android:id="@+id/cropView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/btnlay"
+        android:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/resultIv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/btnlay"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/btnlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <Button
+            android:id="@+id/cancelBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_weight="1"
+            android:background="#000000"
+            android:text="Cancel"
+            android:textColor="#ffffff" />
+
+        <Button
+            android:id="@+id/doneBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_weight="1"
+            android:background="#000000"
+            android:text="Done"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:textColor="#ffffff" />
+    </LinearLayout>
+</RelativeLayout>

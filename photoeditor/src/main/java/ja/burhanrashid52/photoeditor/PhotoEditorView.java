@@ -6,6 +6,7 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -102,7 +103,7 @@ public class PhotoEditorView extends RelativeLayout {
         mImgSource.setOnImageChangedListener(new FilterImageView.OnImageChangedListener() {
             @Override
             public void onBitmapLoaded(@Nullable Bitmap sourceBitmap) {
-                mImageFilterView.setFilterEffect(PhotoFilter.NONE);
+//                mImageFilterView.setFilterEffect(PhotoFilter.NONE);
                 mImageFilterView.setSourceBitmap(sourceBitmap);
                 Log.d(TAG, "onBitmapLoaded() called with: sourceBitmap = [" + sourceBitmap + "]");
             }
@@ -134,6 +135,21 @@ public class PhotoEditorView extends RelativeLayout {
         return mBrushDrawingView;
     }
 
+    public void setImageDrawable(Drawable drawable){
+        mImgSource.setImageDrawable(drawable);
+    }
+
+    public void setImageBitmap(Bitmap bitmap){
+        mImgSource.setImageBitmap(bitmap);
+    }
+
+    public void setImageDrawable(int resId){
+        mImgSource.setImageResource(resId);
+    }
+
+    public void setImageDrawable(Uri uri){
+        mImgSource.setImageURI(uri);
+    }
 
     void saveFilter(@NonNull final OnSaveBitmap onSaveBitmap) {
         if (mImageFilterView.getVisibility() == VISIBLE) {
