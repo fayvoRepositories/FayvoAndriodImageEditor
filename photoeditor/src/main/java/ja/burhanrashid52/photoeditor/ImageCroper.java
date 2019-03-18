@@ -8,6 +8,7 @@ public class ImageCroper {
 
     public static final int CROP_IMAGE_RESULT = 100;
     public static final String EXTRA_CROP_IMAGE = "image_croper_image";
+    public static final String IMAGE_PATH = "image_croper_path";
 
     private Activity activity;
     private Fragment fragment;
@@ -20,12 +21,12 @@ public class ImageCroper {
 
         if (fragment != null) {
             Intent intent = new Intent(fragment.getContext(), CropImageActivity.class);
-            intent.putExtra(EXTRA_CROP_IMAGE, path);
+            intent.putExtra(IMAGE_PATH, path);
             fragment.startActivityForResult(intent, CROP_IMAGE_RESULT);
         }
         if(activity != null){
             Intent intent = new Intent(activity, CropImageActivity.class);
-            intent.putExtra(EXTRA_CROP_IMAGE, path);
+            intent.putExtra(IMAGE_PATH, path);
             activity.startActivityForResult(intent, CROP_IMAGE_RESULT);
         }
     }

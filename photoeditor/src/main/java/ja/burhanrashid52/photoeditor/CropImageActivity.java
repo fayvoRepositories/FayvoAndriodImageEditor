@@ -18,6 +18,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_IMAGE;
+import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_PATH;
+
 public class CropImageActivity extends AppCompatActivity implements View.OnClickListener {
 
     private CropView cropView;
@@ -36,8 +39,8 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 
         doneBtn.setOnClickListener(this);
         cancelBtn.setOnClickListener(this);
-        path = getIntent().getExtras().getString("image");
-        Uri source = Uri.parse(path);
+        path = getIntent().getExtras().getString(IMAGE_PATH);
+        Uri source = Uri.fromFile(new File(path));
         cropView.of(source).asSquare().initialize(CropImageActivity.this);
         cropView.setVisibility(View.VISIBLE);
         btnlay.setVisibility(View.VISIBLE);
@@ -57,9 +60,11 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
                             resultIv.setImageBitmap(croppedBitmap);
                         }
                     });
-                    String destination = saveImage(croppedBitmap, ImagePath.getPath(CropImageActivity.this, Uri.parse(path)));
+                    String destination = saveImage(croppedBitmap,
+                            ImagePath.getPath(CropImageActivity.this,
+                                    Uri.fromFile(new File(path))));
                     Intent intent = new Intent();
-                    intent.putExtra("path", destination);
+                    intent.putExtra(EXTRA_CROP_IMAGE, destination);
                     setResult(RESULT_OK, intent);
                     finish();
 //                    }
@@ -97,6 +102,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
             file = null;
         }
         return file;
-
     }
+
+
 }

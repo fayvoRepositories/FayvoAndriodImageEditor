@@ -55,6 +55,8 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import ja.burhanrashid52.photoeditor.DragDropOnDragListener;
+import ja.burhanrashid52.photoeditor.ImageCroper;
+import ja.burhanrashid52.photoeditor.ImagePath;
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 import ja.burhanrashid52.photoeditor.OnSaveBitmap;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
@@ -62,6 +64,9 @@ import ja.burhanrashid52.photoeditor.PhotoEditorView;
 import ja.burhanrashid52.photoeditor.SaveSettings;
 import ja.burhanrashid52.photoeditor.ViewType;
 import ja.burhanrashid52.photoeditor.PhotoFilter;
+
+import static ja.burhanrashid52.photoeditor.ImageCroper.CROP_IMAGE_RESULT;
+import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_IMAGE;
 
 public class EditImageActivity extends BaseActivity implements OnPhotoEditorListener,
         View.OnClickListener,
@@ -96,6 +101,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
     String videoPath = "";
     FFmpeg ffmpeg;
+    String imagePath = "";
 
 
     @Override
@@ -207,11 +213,14 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         ImageView imgText;
         ImageView imgEmoji;
         ImageView imgSticker;
+        ImageView icCrop;
 
         RecyclerView rvColor = findViewById(R.id.rvColors);
 
         brushLayout = findViewById(R.id.brushLayout);
         layoutTop = findViewById(R.id.layoutTop);
+        icCrop = findViewById(R.id.icCrop);
+        icCrop.setOnClickListener(this);
         done = findViewById(R.id.done);
         btnUndo = findViewById(R.id.btnUndo);
         done.setOnClickListener(this);
@@ -244,6 +253,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
         imgBrush = findViewById(R.id.ivBrush);
         imgBrush.setOnClickListener(this);
+
 //        imgText = findViewById(R.id.ivText);
 //        imgText.setOnClickListener(this);
         mPhotoEditorView.setOnClickListener(this);
@@ -253,7 +263,6 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         imgSticker.setOnClickListener(this);
 
         ivDelete = findViewById(R.id.ivDelete);
-
 
 
         imgUndo = findViewById(R.id.imgUndo);
@@ -334,6 +343,9 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     public void onClick(View view) {
         switch (view.getId()) {
 
+            case R.id.icCrop:
+                new ImageCroper.CropBuilder(imagePath, this).start();
+                break;
             case R.id.done:
                 slideDown(brushLayout);
                 break;
@@ -455,7 +467,19 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
+
             switch (requestCode) {
+                case CROP_IMAGE_RESULT:
+                    try {
+                        mPhotoEditor.clearAllViews();
+                        String uri = data.getStringExtra(EXTRA_CROP_IMAGE);
+                        imagePath = ImagePath.getPath(this, Uri.fromFile(new File(uri)));
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.fromFile(new File(uri)));
+                        mPhotoEditorView.setImageBitmap(bitmap);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
                 case CAMERA_REQUEST:
                     mPhotoEditor.clearAllViews();
                     Bitmap photo = (Bitmap) data.getExtras().get("data");
@@ -465,6 +489,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     try {
                         mPhotoEditor.clearAllViews();
                         Uri uri = data.getData();
+                        imagePath = ImagePath.getPath(this, uri);
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                         mPhotoEditorView.setImageBitmap(bitmap);
                     } catch (IOException e) {
