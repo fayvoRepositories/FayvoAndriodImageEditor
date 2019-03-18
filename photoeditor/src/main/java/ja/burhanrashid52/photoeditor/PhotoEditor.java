@@ -116,7 +116,8 @@ public class PhotoEditor implements BrushViewChangeListener {
                     ClipData data = new ClipData(imageRootView.getTag().toString(), mimeTypes, item);
 
                     // Instantiates the drag shadow builder.
-                    View.DragShadowBuilder dragshadow = new View.DragShadowBuilder(imageRootView);
+//                    View.DragShadowBuilder dragshadow = new View.DragShadowBuilder(imageRootView);
+                    View.DragShadowBuilder dragshadow = new DragShadowBuilder(imageView);
 
                     // Starts the drag
                     imageRootView.startDrag(data       // data to be dragged
@@ -142,8 +143,8 @@ public class PhotoEditor implements BrushViewChangeListener {
      * @param colorCodeTextView text color to be displayed
      */
     @SuppressLint("ClickableViewAccessibility")
-    public void addText(String text, final int colorCodeTextView, View delete) {
-        addText(null, text, colorCodeTextView, delete);
+    public void addText(String text, final int colorCodeTextView, View delete, int size) {
+        addText(null, text, colorCodeTextView, delete, size);
     }
 
     /**
@@ -155,7 +156,7 @@ public class PhotoEditor implements BrushViewChangeListener {
      * @param colorCodeTextView text color to be displayed
      */
     @SuppressLint("ClickableViewAccessibility")
-    public void addText(@Nullable Typeface textTypeface, String text, final int colorCodeTextView, final View delete) {
+    public void addText(@Nullable Typeface textTypeface, String text, final int colorCodeTextView, final View delete, final int size) {
         brushDrawingView.setBrushDrawingMode(false);
         final View textRootView = getLayout(ViewType.TEXT);
         final TextView textInputTv = textRootView.findViewById(R.id.tvPhotoEditorText);
@@ -163,6 +164,7 @@ public class PhotoEditor implements BrushViewChangeListener {
         final FrameLayout frmBorder = textRootView.findViewById(R.id.frmBorder);
 
         textInputTv.setText(text);
+        textInputTv.setTextSize(size);
         textInputTv.setTextColor(colorCodeTextView);
         if (textTypeface != null) {
             textInputTv.setTypeface(textTypeface);
@@ -183,7 +185,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                 String textInput = textInputTv.getText().toString();
                 int currentTextColor = textInputTv.getCurrentTextColor();
                 if (mOnPhotoEditorListener != null) {
-                    mOnPhotoEditorListener.onEditTextChangeListener(textRootView, textInput, currentTextColor);
+                    mOnPhotoEditorListener.onEditTextChangeListener(textRootView, textInput, currentTextColor, size);
                 }
             }
 
@@ -230,8 +232,8 @@ public class PhotoEditor implements BrushViewChangeListener {
      * @param inputText text to update {@link TextView}
      * @param colorCode color to update on {@link TextView}
      */
-    public void editText(View view, String inputText, int colorCode) {
-        editText(view, null, inputText, colorCode);
+    public void editText(View view, String inputText, int colorCode, int size) {
+        editText(view, null, inputText, colorCode, size);
     }
 
     /**
@@ -242,7 +244,7 @@ public class PhotoEditor implements BrushViewChangeListener {
      * @param inputText    text to update {@link TextView}
      * @param colorCode    color to update on {@link TextView}
      */
-    public void editText(View view, Typeface textTypeface, String inputText, int colorCode) {
+    public void editText(View view, Typeface textTypeface, String inputText, int colorCode, int size) {
         TextView inputTextView = view.findViewById(R.id.tvPhotoEditorText);
         if (inputTextView != null && addedViews.contains(view) && !TextUtils.isEmpty(inputText)) {
             inputTextView.setText(inputText);

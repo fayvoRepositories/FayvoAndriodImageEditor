@@ -18,25 +18,32 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.TextView;
+
+import static android.support.annotation.Dimension.SP;
 
 /**
  * Created by Burhanuddin Rashid on 1/16/2018.
  */
 
-public class TextEditorDialogFragment extends DialogFragment {
+public class TextEditorDialogFragment extends DialogFragment implements SeekBar.OnSeekBarChangeListener {
 
     public static final String TAG = TextEditorDialogFragment.class.getSimpleName();
     public static final String EXTRA_INPUT_TEXT = "extra_input_text";
     public static final String EXTRA_COLOR_CODE = "extra_color_code";
     private EditText mAddTextEditText;
     private TextView mAddTextDoneTextView;
+    private SeekBar sbTextSize;
     private InputMethodManager mInputMethodManager;
     private int mColorCode;
     private TextEditor mTextEditor;
 
+    int size = 10;
+
+
     public interface TextEditor {
-        void onDone(String inputText, int colorCode);
+        void onDone(String inputText, int colorCode, int size);
     }
 
 
@@ -84,6 +91,8 @@ public class TextEditorDialogFragment extends DialogFragment {
         mAddTextEditText = view.findViewById(R.id.add_text_edit_text);
         mInputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         mAddTextDoneTextView = view.findViewById(R.id.add_text_done_tv);
+        sbTextSize = view.findViewById(R.id.sbTextSize);
+        sbTextSize.setOnSeekBarChangeListener(this);
 
         //Setup the color picker for text color
         RecyclerView addTextColorPickerRecyclerView = view.findViewById(R.id.add_text_color_picker_recycler_view);
@@ -103,6 +112,7 @@ public class TextEditorDialogFragment extends DialogFragment {
         mAddTextEditText.setText(getArguments().getString(EXTRA_INPUT_TEXT));
         mColorCode = getArguments().getInt(EXTRA_COLOR_CODE);
         mAddTextEditText.setTextColor(mColorCode);
+
         mInputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 
         //Make a callback on activity when user is done with text editing
@@ -113,9 +123,9 @@ public class TextEditorDialogFragment extends DialogFragment {
                 dismiss();
                 String inputText = mAddTextEditText.getText().toString();
                 if (!TextUtils.isEmpty(inputText) && mTextEditor != null) {
-                    mTextEditor.onDone(inputText, mColorCode);
+                    mTextEditor.onDone(inputText, mColorCode, size);
                 }else{
-                    mTextEditor.onDone(inputText, mColorCode);
+                    mTextEditor.onDone(inputText, mColorCode, size);
                 }
             }
         });
@@ -126,5 +136,24 @@ public class TextEditorDialogFragment extends DialogFragment {
     //Callback to listener if user is done with text editing
     public void setOnTextEditorListener(TextEditor textEditor) {
         mTextEditor = textEditor;
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int size, boolean b) {
+        if(size < 9){
+            size = 9;
+        }
+        this.size = size;
+        mAddTextEditText.setTextSize(size);
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
     }
 }

@@ -21,7 +21,7 @@ public interface OnPhotoEditorListener {
      * @param text      current text set on the view
      * @param colorCode current color value set on view
      */
-    void onEditTextChangeListener(View rootView, String text, int colorCode);
+    void onEditTextChangeListener(View rootView, String text, int colorCode, int size);
 
     /**
      * This is a callback when user adds any view on the {@link PhotoEditorView} it can be

@@ -302,13 +302,13 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     }
 
     @Override
-    public void onEditTextChangeListener(final View rootView, String text, int colorCode) {
+    public void onEditTextChangeListener(final View rootView, String text, int colorCode, int size) {
         TextEditorDialogFragment textEditorDialogFragment =
                 TextEditorDialogFragment.show(this, text, colorCode);
         textEditorDialogFragment.setOnTextEditorListener(new TextEditorDialogFragment.TextEditor() {
             @Override
-            public void onDone(String inputText, int colorCode) {
-                mPhotoEditor.editText(rootView, inputText, colorCode);
+            public void onDone(String inputText, int colorCode, int size) {
+                mPhotoEditor.editText(rootView, inputText, colorCode, size);
                 mTxtCurrentTool.setText(R.string.label_text);
             }
         });
@@ -399,8 +399,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 TextEditorDialogFragment textEditorDialogFragment = TextEditorDialogFragment.show(this);
                 textEditorDialogFragment.setOnTextEditorListener(new TextEditorDialogFragment.TextEditor() {
                     @Override
-                    public void onDone(String inputText, int colorCode) {
-                        mPhotoEditor.addText(inputText, colorCode, ivDelete);
+                    public void onDone(String inputText, int colorCode, int size) {
+                        mPhotoEditor.addText(inputText, colorCode, ivDelete, size);
                         mTxtCurrentTool.setText(R.string.label_text);
                     }
                 });
@@ -582,8 +582,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 TextEditorDialogFragment textEditorDialogFragment = TextEditorDialogFragment.show(this);
                 textEditorDialogFragment.setOnTextEditorListener(new TextEditorDialogFragment.TextEditor() {
                     @Override
-                    public void onDone(String inputText, int colorCode) {
-                        mPhotoEditor.addText(inputText, colorCode, ivDelete);
+                    public void onDone(String inputText, int colorCode, int size) {
+                        mPhotoEditor.addText(inputText, colorCode, ivDelete, size);
                         mTxtCurrentTool.setText(R.string.label_text);
                     }
                 });
