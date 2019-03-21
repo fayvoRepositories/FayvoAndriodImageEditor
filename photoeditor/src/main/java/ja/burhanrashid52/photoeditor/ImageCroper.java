@@ -20,7 +20,7 @@ public class ImageCroper {
         this.path = cropBuilder.path;
 
         if (fragment != null) {
-            Intent intent = new Intent(fragment.getContext(), CropImageActivity.class);
+            Intent intent = new Intent(fragment.getActivity(),CropImageActivity.class);
             intent.putExtra(IMAGE_PATH, path);
             fragment.startActivityForResult(intent, CROP_IMAGE_RESULT);
         }

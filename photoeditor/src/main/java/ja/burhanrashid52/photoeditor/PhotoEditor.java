@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.support.annotation.ColorInt;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
@@ -27,6 +28,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -187,6 +189,8 @@ public class PhotoEditor implements BrushViewChangeListener {
                 if (mOnPhotoEditorListener != null) {
                     mOnPhotoEditorListener.onEditTextChangeListener(textRootView, textInput, currentTextColor, size);
                 }
+
+
             }
 
             @Override
@@ -787,36 +791,6 @@ public class PhotoEditor implements BrushViewChangeListener {
         });
     }
 
-    public static Bitmap getBitmapByView(PhotoEditorView scrollView, String filePath) {
-        int h = 0;
-        Bitmap bitmap = null;
-        //get the actual height of scrollview
-        for (int i = 0; i < scrollView.getChildCount(); i++) {
-            h += scrollView.getChildAt(i).getHeight();
-            scrollView.getChildAt(i).setBackgroundResource(android.R.color.transparent);
-        }
-        // create bitmap with target size
-        bitmap = Bitmap.createBitmap(scrollView.getWidth(), h,
-                Bitmap.Config.ARGB_8888);
-        final Canvas canvas = new Canvas(bitmap);
-        scrollView.draw(canvas);
-        FileOutputStream out = null;
-        try {
-            out = new FileOutputStream(filePath);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            if (null != out) {
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-                out.flush();
-                out.close();
-            }
-        } catch (IOException e) {
-            // TODO: handle exception
-        }
-        return bitmap;
-    }
 
     /**
      * Save the edited image as bitmap
@@ -843,6 +817,52 @@ public class PhotoEditor implements BrushViewChangeListener {
             @Override
             public void onBitmapReady(Bitmap saveBitmap) {
                 new AsyncTask<String, String, Bitmap>() {
+                  /*  public Bitmap takeViewScreenShot(View view) {
+                        try {
+                            view.setDrawingCacheEnabled(true);
+                            view.buildDrawingCache();
+                            view.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_LOW);
+                            Bitmap b1 = view.getDrawingCache();
+                            Bitmap b2 = null;
+                            if (b1 != null) {
+                                float aspectRatio = b1.getWidth() / (float) b1.getHeight();
+                                int width = 1440;
+                                int height = Math.round(width / aspectRatio);
+                                // b2 = Bitmap.createScaledBitmap(b1, width, height, false);
+                                //  b2 = b1.copy(Bitmap.Config.ARGB_8888, false);
+                                b2 = b1.copy(Bitmap.Config.ARGB_8888, false);
+                                // b2 = b1.copy(Bitmap.Config.RGB_565, false);
+
+                                //  b1.recycle();
+
+                            }
+                            view.destroyDrawingCache();
+
+                            return b2;
+                        } catch (Exception e) {
+                            return null;
+                        } catch (OutOfMemoryError e) {
+                            return null;
+                        }
+                    }*/
+
+                   /* public File savebitmap(Bitmap bmp, int count) throws IOException {
+                        String filename = count+"pippo.png";
+                        File sd = Environment.getExternalStorageDirectory();
+                        File dest = new File(sd, filename);
+
+                        try {
+                            FileOutputStream out = new FileOutputStream(dest);
+                            bmp.compress(Bitmap.CompressFormat.PNG, 90, out);
+                            out.flush();
+                            out.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        Log.d("ImagePath", dest.getAbsolutePath());
+                        return dest;
+                    }*/
+
                     @Override
                     protected void onPreExecute() {
                         super.onPreExecute();
@@ -854,7 +874,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                     protected Bitmap doInBackground(String... strings) {
                         if (parentView != null) {
                             parentView.setDrawingCacheEnabled(true);
-                            return saveSettings.isTransparencyEnabled() ?
+                             return saveSettings.isTransparencyEnabled() ?
                                     BitmapUtil.removeTransparency(parentView.getDrawingCache())
                                     : parentView.getDrawingCache();
                         } else {

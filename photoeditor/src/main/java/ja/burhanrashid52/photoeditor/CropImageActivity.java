@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.oginotihiro.cropview.CropView;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -21,9 +21,9 @@ import java.io.IOException;
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_IMAGE;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_PATH;
 
-public class CropImageActivity extends AppCompatActivity implements View.OnClickListener {
+public class CropImageActivity extends AppCompatActivity implements View.OnClickListener, CropImageView.OnCropImageCompleteListener,  CropImageView.OnSetImageUriCompleteListener{
 
-    private CropView cropView;
+    private CropImageView mCropImageView;
     private ImageView resultIv;
     String path;
 
@@ -31,7 +31,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crop_image);
-        cropView = findViewById(R.id.cropView);
+        mCropImageView = findViewById(R.id.cropView);
         resultIv = findViewById(R.id.resultIv);
         LinearLayout btnlay = findViewById(R.id.btnlay);
         Button doneBtn = findViewById(R.id.doneBtn);
@@ -41,8 +41,8 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         cancelBtn.setOnClickListener(this);
         path = getIntent().getExtras().getString(IMAGE_PATH);
         Uri source = Uri.fromFile(new File(path));
-        cropView.of(source).asSquare().initialize(CropImageActivity.this);
-        cropView.setVisibility(View.VISIBLE);
+        mCropImageView.setImageUriAsync(source);
+        mCropImageView.setVisibility(View.VISIBLE);
         btnlay.setVisibility(View.VISIBLE);
     }
 
@@ -50,29 +50,8 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.doneBtn) {
-
-            new Thread() {
-                public void run() {
-                    final Bitmap croppedBitmap = cropView.getOutput();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            resultIv.setImageBitmap(croppedBitmap);
-                        }
-                    });
-                    String destination = saveImage(croppedBitmap,
-                            ImagePath.getPath(CropImageActivity.this,
-                                    Uri.fromFile(new File(path))));
-                    Intent intent = new Intent();
-                    intent.putExtra(EXTRA_CROP_IMAGE, destination);
-                    setResult(RESULT_OK, intent);
-                    finish();
-//                    }
-
-                }
-            }.start();
+            mCropImageView.getCroppedImageAsync();
         } else if (id == R.id.cancelBtn) {
-//            reset();
             onBackPressed();
 
         }
@@ -89,13 +68,10 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
-//you can create a new file name "test.jpg" in sdcard folder.
             File f = new File(file);
             f.createNewFile();
-//write the bytes in file
             FileOutputStream fo = new FileOutputStream(f);
             fo.write(bytes.toByteArray());
-// remember close de FileOutput
             fo.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -104,5 +80,41 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         return file;
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mCropImageView.setOnSetImageUriCompleteListener(this);
+        mCropImageView.setOnCropImageCompleteListener(this);
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mCropImageView.setOnSetImageUriCompleteListener(null);
+        mCropImageView.setOnCropImageCompleteListener(null);
+    }
+
+    @Override
+    public void onSetImageUriComplete(CropImageView view, Uri uri, Exception error) {
+
+    }
+
+    @Override
+    public void onCropImageComplete(CropImageView view, CropImageView.CropResult result) {
+
+        final Bitmap croppedBitmap = result.getBitmap();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                resultIv.setImageBitmap(croppedBitmap);
+            }
+        });
+        String destination = saveImage(croppedBitmap,
+                ImagePath.getPath(CropImageActivity.this,
+                        Uri.fromFile(new File(path))));
+        Intent intent = new Intent();
+        intent.putExtra(EXTRA_CROP_IMAGE, destination);
+        setResult(RESULT_OK, intent);
+        finish();
+    }
 }

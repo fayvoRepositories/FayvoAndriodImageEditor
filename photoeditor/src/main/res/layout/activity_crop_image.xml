@@ -3,16 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
-    >
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#000000">
 
-    <com.oginotihiro.cropview.CropView
+    <com.theartofdev.edmodo.cropper.CropImageView
+        android:id="@+id/cropView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:cropShowProgressBar="false"
+        android:layout_above="@+id/btnlay"
+        android:visibility="visible"/>
+  <!--  <com.oginotihiro.cropview.CropView
         android:id="@+id/cropView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/btnlay"
         android:visibility="visible" />
-
+-->
     <ImageView
         android:id="@+id/resultIv"
         android:layout_width="match_parent"

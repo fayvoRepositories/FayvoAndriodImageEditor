@@ -1,5 +1,7 @@
 package ja.burhanrashid52.photoeditor;
 
+import android.content.ClipData;
+import android.content.ClipDescription;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -139,11 +141,11 @@ class MultiTouchListener implements OnTouchListener {
                 break;
             case MotionEvent.ACTION_MOVE:
                 Log.d("Drag ", "ACTION_MOVE");
+                if (deleteView != null) {
+                    deleteView.setVisibility(View.VISIBLE);
+                }
                 int pointerIndexMove = event.findPointerIndex(mActivePointerId);
                 if (pointerIndexMove != -1) {
-
-
-
                     float currX = event.getX(pointerIndexMove);
                     float currY = event.getY(pointerIndexMove);
                     if (!mScaleGestureDetector.isInProgress()) {
@@ -154,6 +156,7 @@ class MultiTouchListener implements OnTouchListener {
             case MotionEvent.ACTION_CANCEL:
                 Log.d("Drag ", "ACTION_CANCEL");
                 mActivePointerId = INVALID_POINTER_ID;
+
                 break;
             case MotionEvent.ACTION_UP:
                 Log.d("Drag ", "ACTION_UP");
@@ -164,12 +167,11 @@ class MultiTouchListener implements OnTouchListener {
                 } else if (!isViewInBounds(photoEditImageView, x, y)) {
                     view.animate().translationY(0).translationY(0);
                 }
-                if (deleteView != null) {
-                    deleteView.setVisibility(View.GONE);
-                }
+
                 firePhotoEditorSDKListener(view, false);
                 break;
             case MotionEvent.ACTION_POINTER_UP:
+
                 Log.d("Drag ", "ACTION_POINTER_UP");
                 int pointerIndexPointerUp = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                 int pointerId = event.getPointerId(pointerIndexPointerUp);

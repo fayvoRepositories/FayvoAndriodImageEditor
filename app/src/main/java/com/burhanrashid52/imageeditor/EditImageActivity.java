@@ -9,9 +9,16 @@ import android.content.Intent;
 import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -22,6 +29,7 @@ import android.support.constraint.ConstraintSet;
 import android.support.transition.ChangeBounds;
 import android.support.transition.TransitionManager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -49,9 +57,13 @@ import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedExceptio
 import com.nbsp.materialfilepicker.MaterialFilePicker;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import ja.burhanrashid52.photoeditor.DragDropOnDragListener;
@@ -92,6 +104,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private ConstraintLayout mRootView;
     private ConstraintSet mConstraintSet = new ConstraintSet();
     private boolean mIsFilterVisible;
+    private List<PhotoFilter> filters = new ArrayList<>();
 
     LinearLayout ivDelete;
 
@@ -113,7 +126,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         initViews();
         ffmpeg = FFmpeg.getInstance(EditImageActivity.this);
         mWonderFont = Typeface.createFromAsset(getAssets(), "beyond_wonderland.ttf");
-
+        setupFilters();
         mPropertiesBSFragment = new PropertiesBSFragment();
         mEmojiBSFragment = new EmojiBSFragment();
         mStickerBSFragment = new StickerBSFragment();
@@ -158,6 +171,30 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         }
     }
 
+
+    private void setupFilters() {
+        filters.add(PhotoFilter.NONE);
+        filters.add(PhotoFilter.AUTO_FIX);
+        filters.add(PhotoFilter.BRIGHTNESS);
+        filters.add(PhotoFilter.CONTRAST);
+        filters.add(PhotoFilter.DOCUMENTARY);
+        filters.add(PhotoFilter.DUE_TONE);
+        filters.add(PhotoFilter.FILL_LIGHT);
+        filters.add(PhotoFilter.FISH_EYE);
+        filters.add(PhotoFilter.GRAIN);
+        filters.add(PhotoFilter.GRAY_SCALE);
+        filters.add(PhotoFilter.LOMISH);
+        filters.add(PhotoFilter.NEGATIVE);
+        filters.add(PhotoFilter.POSTERIZE);
+        filters.add(PhotoFilter.SATURATE);
+        filters.add(PhotoFilter.SEPIA);
+        filters.add(PhotoFilter.SHARPEN);
+        filters.add(PhotoFilter.TEMPERATURE);
+        filters.add(PhotoFilter.TINT);
+        filters.add(PhotoFilter.VIGNETTE);
+        filters.add(PhotoFilter.CROSS_PROCESS);
+        filters.add(PhotoFilter.BLACK_WHITE);
+    }
     private void execFFmpegBinary(final String[] command) {
         try {
             ffmpeg.execute(command, new ExecuteBinaryResponseHandler() {
@@ -256,7 +293,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
 //        imgText = findViewById(R.id.ivText);
 //        imgText.setOnClickListener(this);
-        mPhotoEditorView.setOnClickListener(this);
+//        mPhotoEditorView.setOnClickListener(this);
+        setSwipeListener(mPhotoEditorView);
         imgEmoji = findViewById(R.id.ivEmoji);
         imgEmoji.setOnClickListener(this);
         imgSticker = findViewById(R.id.ivSticker);
@@ -282,22 +320,6 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
         imgClose = findViewById(R.id.imgClose);
         imgClose.setOnClickListener(this);
-
-
-        /*File file = new File(Environment.getExternalStorageDirectory()
-                + File.separator + ""
-                + System.currentTimeMillis() + ".png");
-        mPhotoEditor.saveAsFile(file.getAbsolutePath(), new PhotoEditor.OnSaveListener() {
-            @Override
-            public void onSuccess(@NonNull String imagePath) {
-
-            }
-
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-
-            }
-        });*/
 
     }
 
@@ -370,7 +392,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 break;
 
             case R.id.imgCamera:
-                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+//                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                Intent cameraIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);
                 break;
 
@@ -379,7 +402,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 intent.setType("image/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_REQUEST);
-               /* new MaterialFilePicker()
+/*                new MaterialFilePicker()
                         .withActivity(this)
                         .withRequestCode(PICK_REQUEST)
 //                        .withFilter(Pattern.compile(".*\\.mp4$")) // Filtering files and directories by file name using regexp
@@ -417,50 +440,75 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
     @SuppressLint("MissingPermission")
     private void saveImage() {
-        if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading("Saving...");
-            File file = new File(Environment.getExternalStorageDirectory()
-                    + File.separator + ""
-                    + System.currentTimeMillis() + ".png");
-            try {
-                file.createNewFile();
+        if (true) {
+            if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                showLoading("Saving...");
+                File file = new File(Environment.getExternalStorageDirectory()
+                        + File.separator + ""
+                        + System.currentTimeMillis() + ".png");
+                try {
+                    file.createNewFile();
 
-                SaveSettings saveSettings = new SaveSettings.Builder()
-                        .setClearViewsEnabled(true)
-                        .setTransparencyEnabled(true)
-                        .build();
+                    SaveSettings saveSettings = new SaveSettings.Builder()
+                            .setClearViewsEnabled(true)
+                            .setTransparencyEnabled(true)
+                            .build();
 
-                mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
-                    @Override
-                    public void onSuccess(@NonNull String imagePath) {
-                        hideLoading();
-                        showSnackbar("Image Saved Successfully");
-                        mPhotoEditorView.getSource().setImageURI(Uri.fromFile(new File(imagePath)));
+                    mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
+                        @Override
+                        public void onSuccess(@NonNull String imagePath) {
+                            hideLoading();
 
 
-/*//                        ffmpeg -i inputVideo.mp4 -i yourImage.png -filter_complex "overlay=5:5" -codec:a copy outputVideo.mp4
-                        String command = "ffmpeg -i " + videoPath + " -i " + imagePath + " " +
-                                "-filter_complex \"overlay=5:5\" -codec:a " +
-                                " copy " + videoPath;
-//                        String[] cmd = new String[]{"-y", "-i", videoPath, "-i", imagePath, "-filter_complex", "[1][0]scale2ref[i][m];[m][i]overlay[v]", "-map", "[v]", "-map", "0:a?", "-ac", "2", videoPath};
-                        String[] cmd = command.split(" ");
-                        Log.d("ffmpeg commond ", Arrays.toString(cmd));
-                        if (cmd.length != 0) {
-                            execFFmpegBinary(cmd);
-                        }*/
-                    }
 
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        hideLoading();
-                        showSnackbar("Failed to save Image");
-                    }
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-                hideLoading();
-                showSnackbar(e.getMessage());
+                            showSnackbar("Image Saved Successfully");
+                            mPhotoEditorView.getSource().setImageURI(Uri.fromFile(new File(imagePath)));
+
+                           /* String outputPath = videoPath.replace(".mp4", "new.mp4");
+
+                            String[] cmd = new String[]{"-y", "-i", videoPath, "-i",
+                                    imagePath,
+                                    "-preset", "ultrafast",
+                                    "-filter_complex",
+                                    "[1][0]scale2ref[i][m];[m][i]overlay[v]", "-map",
+                                    "[v]", "-map", "0:a?", "-ac", "2", outputPath};
+
+
+
+//                          String[] cmd  = command.split(" ");
+                            Log.d("ffmpeg commond ", Arrays.toString(cmd));
+                            if (cmd.length != 0) {
+                                execFFmpegBinary(cmd);
+                            }*/
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            hideLoading();
+                            showSnackbar("Failed to save Image");
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    hideLoading();
+                    showSnackbar(e.getMessage());
+                }
             }
+        } else {
+            showLoading("Saving...");
+            mPhotoEditor.saveAsBitmap(new OnSaveBitmap() {
+                @Override
+                public void onBitmapReady(Bitmap saveBitmap) {
+                    hideLoading();
+                    showSnackbar("Image Saved Successfully");
+                    mPhotoEditorView.getSource().setImageBitmap(saveBitmap);
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+
+                }
+            });
         }
     }
 
@@ -497,9 +545,23 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     }
 
                     /*videoPath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
+                    Drawable myDrawable = getResources().getDrawable(R.drawable.transparent);
+                    Bitmap anImage      = ((BitmapDrawable) myDrawable).getBitmap();
+
+                    MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                    retriever.setDataSource(videoPath);
+                    int width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
+                    int height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+                    retriever.release();
+
+                    Bitmap bitmap = getResizedBitmap(anImage, width, height);
+                    mPhotoEditorView.getSource().setImageBitmap(bitmap);
+
 //                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                     videoView.setVideoPath(videoPath);
-                    videoView.start();*/
+                    videoView.start();
+*/
+
                     break;
             }
         }
@@ -579,14 +641,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 mPropertiesBSFragment.show(getSupportFragmentManager(), mPropertiesBSFragment.getTag());
                 break;
             case TEXT:
-                TextEditorDialogFragment textEditorDialogFragment = TextEditorDialogFragment.show(this);
-                textEditorDialogFragment.setOnTextEditorListener(new TextEditorDialogFragment.TextEditor() {
-                    @Override
-                    public void onDone(String inputText, int colorCode, int size) {
-                        mPhotoEditor.addText(inputText, colorCode, ivDelete, size);
-                        mTxtCurrentTool.setText(R.string.label_text);
-                    }
-                });
+                setAddTextEvent();
                 break;
             case EMOJI:
                 mEmojiBSFragment.show(getSupportFragmentManager(), mEmojiBSFragment.getTag());
@@ -673,6 +728,70 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         view.startAnimation(animate);
         view.setVisibility(View.GONE);
         view.clearAnimation();
+    }
+
+    private int filterIndex = 0;
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void setSwipeListener(PhotoEditorView ivThumbnail) {
+        ivThumbnail.setOnTouchListener(new OnSwipeTouchListener(this) {
+
+            @Override
+            public void onSwipeLeft() {
+                filterIndex--;
+                if (filterIndex < 0) {
+                    filterIndex = filters.size() - 1;
+                }
+                mPhotoEditor.setFilterEffect(filters.get(filterIndex));
+            }
+
+            @Override
+            public void onSwipeRight() {
+                filterIndex++;
+                if (filterIndex >= filters.size()) {
+                    filterIndex = 0;
+                }
+                mPhotoEditor.setFilterEffect(filters.get(filterIndex));
+            }
+
+            @Override
+            public void onTouch() {
+                setAddTextEvent();
+            }
+        });
+    }
+
+    public void setAddTextEvent() {
+        mPhotoEditor.setBrushDrawingMode(false);
+        TextEditorDialogFragment textEditorDialogFragment = TextEditorDialogFragment.show(this);
+        textEditorDialogFragment.setOnTextEditorListener(new TextEditorDialogFragment.TextEditor() {
+            @Override
+            public void onDone(String inputText, int colorCode, int size) {
+                mPhotoEditor.addText(inputText, colorCode, ivDelete, size);
+                mTxtCurrentTool.setText(R.string.label_text);
+            }
+        });
+    }
+
+    public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+        Bitmap output = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+        Matrix m = new Matrix();
+        m.setScale((float) newWidth / bm.getWidth(), (float) newHeight / bm.getHeight());
+        canvas.drawBitmap(bm, m, new Paint());
+
+        return output;
+    }
+
+    public void savebitmap(Bitmap bmp, String filePath) throws IOException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 60, bytes);
+        File f = new File(filePath);
+//        f.createNewFile();
+        FileOutputStream fo = new FileOutputStream(f);
+        fo.write(bytes.toByteArray());
+        fo.close();
+
     }
 
 }

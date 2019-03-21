@@ -39,7 +39,8 @@ public class PropertiesBSFragment extends BottomSheetDialogFragment implements S
         super.setupDialog(dialog, style);
         View contentView = View.inflate(getContext(), R.layout.fragment_bottom_properties_dialog, null);
         dialog.setContentView(contentView);
-        CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) ((View) contentView.getParent()).getLayoutParams();
+        CoordinatorLayout.LayoutParams params =
+                (CoordinatorLayout.LayoutParams) ((View) contentView.getParent()).getLayoutParams();
         CoordinatorLayout.Behavior behavior = params.getBehavior();
 
         if (behavior != null && behavior instanceof BottomSheetBehavior) {

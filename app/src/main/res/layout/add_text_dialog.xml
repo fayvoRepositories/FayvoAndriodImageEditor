@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#B3000000"
+    android:background="@android:color/transparent"
     android:orientation="vertical">
 
     <TextView
@@ -29,7 +29,7 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/add_text_color_picker_relative_layout"
         android:layout_below="@+id/add_text_done_tv"
-        android:background="@null"
+        android:background="@android:color/transparent"
         android:gravity="center"
         android:inputType="textMultiLine"
         android:textSize="40sp" />

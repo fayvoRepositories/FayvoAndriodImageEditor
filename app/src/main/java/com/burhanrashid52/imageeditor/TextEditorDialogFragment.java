@@ -2,7 +2,9 @@ package com.burhanrashid52.imageeditor;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
@@ -16,12 +18,12 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
-import static android.support.annotation.Dimension.SP;
 
 /**
  * Created by Burhanuddin Rashid on 1/16/2018.
@@ -39,7 +41,7 @@ public class TextEditorDialogFragment extends DialogFragment implements SeekBar.
     private int mColorCode;
     private TextEditor mTextEditor;
 
-    int size = 10;
+    int size = 40;
 
 
     public interface TextEditor {
@@ -67,6 +69,18 @@ public class TextEditorDialogFragment extends DialogFragment implements SeekBar.
     }
 
     @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+
+        //set the dialog to non-modal and disable dim out fragment behind
+        Window window = dialog.getWindow();
+        window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        return dialog;
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         Dialog dialog = getDialog();
@@ -75,19 +89,24 @@ public class TextEditorDialogFragment extends DialogFragment implements SeekBar.
             int width = ViewGroup.LayoutParams.MATCH_PARENT;
             int height = ViewGroup.LayoutParams.MATCH_PARENT;
             dialog.getWindow().setLayout(width, height);
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            Drawable drawable = new ColorDrawable(Color.TRANSPARENT);
+            drawable.setAlpha(130);
+            dialog.getWindow().setBackgroundDrawable(drawable);
         }
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.add_text_dialog, container, false);
+        View view  = inflater.inflate(R.layout.add_text_dialog, container, false);
+//        view.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+        return view;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         mAddTextEditText = view.findViewById(R.id.add_text_edit_text);
         mInputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         mAddTextDoneTextView = view.findViewById(R.id.add_text_done_tv);
@@ -140,8 +159,8 @@ public class TextEditorDialogFragment extends DialogFragment implements SeekBar.
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int size, boolean b) {
-        if(size < 9){
-            size = 9;
+        if(size < 15){
+            size = 15;
         }
         this.size = size;
         mAddTextEditText.setTextSize(size);
