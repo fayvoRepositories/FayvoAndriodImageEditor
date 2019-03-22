@@ -208,6 +208,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 public void onSuccess(String s) {
 //                    addTextViewToLayout("SUCCESS with output : "+s);
                     Log.d("ffmpeg onSuccess", s);
+                    videoView.setVideoPath(videoPath);
+                    videoView.start();
                 }
 
                 @Override
@@ -398,17 +400,17 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 break;
 
             case R.id.imgGallery:
-                Intent intent = new Intent();
+                /*Intent intent = new Intent();
                 intent.setType("image/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_REQUEST);
-/*                new MaterialFilePicker()
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_REQUEST);*/
+                new MaterialFilePicker()
                         .withActivity(this)
                         .withRequestCode(PICK_REQUEST)
 //                        .withFilter(Pattern.compile(".*\\.mp4$")) // Filtering files and directories by file name using regexp
                         .withFilterDirectories(true) // Set directories filterable (false by default)
                         .withHiddenFiles(true) // Show hidden files and folders
-                        .start();*/
+                        .start();
                 break;
             case R.id.ivBrush:
                 mPhotoEditor.setBrushDrawingMode(true);
@@ -464,7 +466,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                             showSnackbar("Image Saved Successfully");
                             mPhotoEditorView.getSource().setImageURI(Uri.fromFile(new File(imagePath)));
 
-                           /* String outputPath = videoPath.replace(".mp4", "new.mp4");
+                            String outputPath = videoPath.replace(".mp4", "new.mp4");
 
                             String[] cmd = new String[]{"-y", "-i", videoPath, "-i",
                                     imagePath,
@@ -479,7 +481,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                             Log.d("ffmpeg commond ", Arrays.toString(cmd));
                             if (cmd.length != 0) {
                                 execFFmpegBinary(cmd);
-                            }*/
+                            }
                         }
 
                         @Override
@@ -534,7 +536,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     mPhotoEditorView.setImageBitmap(photo);
                     break;
                 case PICK_REQUEST:
-                    try {
+                    /*try {
                         mPhotoEditor.clearAllViews();
                         Uri uri = data.getData();
                         imagePath = ImagePath.getPath(this, uri);
@@ -542,9 +544,9 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                         mPhotoEditorView.setImageBitmap(bitmap);
                     } catch (IOException e) {
                         e.printStackTrace();
-                    }
+                    }*/
 
-                    /*videoPath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
+                    videoPath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
                     Drawable myDrawable = getResources().getDrawable(R.drawable.transparent);
                     Bitmap anImage      = ((BitmapDrawable) myDrawable).getBitmap();
 
@@ -560,7 +562,6 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 //                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                     videoView.setVideoPath(videoPath);
                     videoView.start();
-*/
 
                     break;
             }
