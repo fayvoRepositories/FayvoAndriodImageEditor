@@ -548,7 +548,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
                     videoPath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
                     Drawable myDrawable = getResources().getDrawable(R.drawable.transparent);
-                    Bitmap anImage      = ((BitmapDrawable) myDrawable).getBitmap();
+                    Bitmap anImage = ((BitmapDrawable) myDrawable).getBitmap();
 
                     MediaMetadataRetriever retriever = new MediaMetadataRetriever();
                     retriever.setDataSource(videoPath);

@@ -334,6 +334,9 @@ public class PhotoEditor implements BrushViewChangeListener {
         addViewToParent(emojiRootView, ViewType.EMOJI);
     }
 
+    public boolean isEditingApplied(){
+        return addedViews.size() == 0;
+    }
 
     /**
      * Add to root view from image,emoji and text to our parent view
