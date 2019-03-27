@@ -13,7 +13,7 @@
         android:id="@+id/videoView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:visibility="visible"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/rvConstraintTools"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -29,9 +29,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:photo_src="@drawable/transparent">
-
-    </ja.burhanrashid52.photoeditor.PhotoEditorView>
+        app:photo_src="@drawable/got_s"/>
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/layoutTop"
@@ -253,7 +251,7 @@
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
         android:orientation="vertical"
-        android:visibility="visible"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

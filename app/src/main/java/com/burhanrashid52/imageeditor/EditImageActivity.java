@@ -442,7 +442,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
     @SuppressLint("MissingPermission")
     private void saveImage() {
-        if (true) {
+        if (false) {
             if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 showLoading("Saving...");
                 File file = new File(Environment.getExternalStorageDirectory()
@@ -536,7 +536,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     mPhotoEditorView.setImageBitmap(photo);
                     break;
                 case PICK_REQUEST:
-                    /*try {
+                    try {
                         mPhotoEditor.clearAllViews();
                         Uri uri = data.getData();
                         imagePath = ImagePath.getPath(this, uri);
@@ -544,9 +544,9 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                         mPhotoEditorView.setImageBitmap(bitmap);
                     } catch (IOException e) {
                         e.printStackTrace();
-                    }*/
+                    }
 
-                    videoPath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
+                    /*videoPath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
                     Drawable myDrawable = getResources().getDrawable(R.drawable.transparent);
                     Bitmap anImage = ((BitmapDrawable) myDrawable).getBitmap();
 
@@ -561,7 +561,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
 //                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                     videoView.setVideoPath(videoPath);
-                    videoView.start();
+                    videoView.start();*/
 
                     break;
             }

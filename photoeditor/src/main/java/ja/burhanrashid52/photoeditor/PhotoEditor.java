@@ -61,6 +61,7 @@ public class PhotoEditor implements BrushViewChangeListener {
     private boolean isTextPinchZoomable;
     private Typeface mDefaultTextTypeface;
     private Typeface mDefaultEmojiTypeface;
+    private boolean isBurshEnable = false;
 
 
     private PhotoEditor(Builder builder) {
@@ -159,6 +160,7 @@ public class PhotoEditor implements BrushViewChangeListener {
      */
     @SuppressLint("ClickableViewAccessibility")
     public void addText(@Nullable Typeface textTypeface, String text, final int colorCodeTextView, final View delete, final int size) {
+        isBurshEnable = false;
         brushDrawingView.setBrushDrawingMode(false);
         final View textRootView = getLayout(ViewType.TEXT);
         final TextView textInputTv = textRootView.findViewById(R.id.tvPhotoEditorText);
@@ -175,7 +177,7 @@ public class PhotoEditor implements BrushViewChangeListener {
         imgClose.setVisibility(View.GONE);
         frmBorder.setBackgroundResource(0);
         if(textInputTv.getText().toString().equals("")){
-            undo();
+            viewUndo(textRootView, ViewType.TEXT);
         }
         multiTouchListener.setOnGestureControl(new MultiTouchListener.OnGestureControl() {
             @Override
@@ -283,6 +285,7 @@ public class PhotoEditor implements BrushViewChangeListener {
      */
     public void addEmoji(Typeface emojiTypeface, String emojiName, final LinearLayout delete) {
         brushDrawingView.setBrushDrawingMode(false);
+        isBurshEnable = false;
         final View emojiRootView = getLayout(ViewType.EMOJI);
         final TextView emojiTextView = emojiRootView.findViewById(R.id.tvPhotoEditorText);
         final FrameLayout frmBorder = emojiRootView.findViewById(R.id.frmBorder);
@@ -431,8 +434,15 @@ public class PhotoEditor implements BrushViewChangeListener {
      * @param brushDrawingMode true if mode is enabled
      */
     public void setBrushDrawingMode(boolean brushDrawingMode) {
-        if (brushDrawingView != null)
+        if (brushDrawingView != null) {
+            isBurshEnable = brushDrawingMode;
             brushDrawingView.setBrushDrawingMode(brushDrawingMode);
+
+        }
+    }
+
+    public boolean isBurshEnable(){
+        return isBurshEnable;
     }
 
     /**
