@@ -266,6 +266,10 @@ public class PhotoEditor implements BrushViewChangeListener {
         }
     }
 
+    public boolean hasDrawing(){
+        return addedViews.size() != 0;
+    }
+
     /**
      * Adds emoji to the {@link PhotoEditorView} which you drag,rotate and scale using pinch
      * if {@link PhotoEditor.Builder#setPinchTextScalable(boolean)} enabled
