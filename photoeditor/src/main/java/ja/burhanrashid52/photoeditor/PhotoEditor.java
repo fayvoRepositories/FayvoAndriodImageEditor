@@ -176,7 +176,7 @@ public class PhotoEditor implements BrushViewChangeListener {
         MultiTouchListener multiTouchListener = getMultiTouchListener();
         imgClose.setVisibility(View.GONE);
         frmBorder.setBackgroundResource(0);
-        if(textInputTv.getText().toString().equals("")){
+        if (textInputTv.getText().toString().equals("")) {
             viewUndo(textRootView, ViewType.TEXT);
         }
         multiTouchListener.setOnGestureControl(new MultiTouchListener.OnGestureControl() {
@@ -261,13 +261,15 @@ public class PhotoEditor implements BrushViewChangeListener {
             parentView.updateViewLayout(view, view.getLayoutParams());
             int i = addedViews.indexOf(view);
             if (i > -1) addedViews.set(i, view);
-        }else{
+        } else {
             undo();
         }
     }
 
-    public boolean hasDrawing(){
-        return addedViews.size() != 0;
+    public boolean hasDrawing() {
+        if (brushDrawingView != null)
+            return brushDrawingView.isDrawingEmpty();
+        return false;
     }
 
     /**
@@ -276,7 +278,7 @@ public class PhotoEditor implements BrushViewChangeListener {
      *
      * @param emojiName unicode in form of string to display emoji
      */
-    public void addEmoji(String emojiName,  LinearLayout delete) {
+    public void addEmoji(String emojiName, LinearLayout delete) {
         addEmoji(null, emojiName, delete);
     }
 
@@ -341,7 +343,7 @@ public class PhotoEditor implements BrushViewChangeListener {
         addViewToParent(emojiRootView, ViewType.EMOJI);
     }
 
-    public boolean isEditingApplied(){
+    public boolean isEditingApplied() {
         return addedViews.size() == 0;
     }
 
@@ -445,7 +447,7 @@ public class PhotoEditor implements BrushViewChangeListener {
         }
     }
 
-    public boolean isBurshEnable(){
+    public boolean isBurshEnable() {
         return isBurshEnable;
     }
 
@@ -592,7 +594,7 @@ public class PhotoEditor implements BrushViewChangeListener {
             }
         }*/
 
-        for (int i = addedViews.size()-1; i >= 0; i--) {
+        for (int i = addedViews.size() - 1; i >= 0; i--) {
             View removeView = addedViews.get(i);
             if (removeView instanceof BrushDrawingView) {
                 return brushDrawingView != null && brushDrawingView.undo();
@@ -823,7 +825,7 @@ public class PhotoEditor implements BrushViewChangeListener {
     /**
      * Save the edited image as bitmap
      *
-     * @param saveSettings   builder for multiple save options {@link SaveSettings}
+     * @param saveSettings builder for multiple save options {@link SaveSettings}
      * @param onSaveBitmap callback for saving image as bitmap
      * @see OnSaveBitmap
      */
@@ -891,7 +893,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                     protected Bitmap doInBackground(String... strings) {
                         if (parentView != null) {
                             parentView.setDrawingCacheEnabled(true);
-                             return saveSettings.isTransparencyEnabled() ?
+                            return saveSettings.isTransparencyEnabled() ?
                                     BitmapUtil.removeTransparency(parentView.getDrawingCache())
                                     : parentView.getDrawingCache();
                         } else {

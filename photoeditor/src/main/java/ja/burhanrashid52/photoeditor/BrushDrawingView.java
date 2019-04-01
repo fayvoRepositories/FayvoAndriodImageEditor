@@ -237,6 +237,10 @@ public class BrushDrawingView extends View {
         return !mDrawnPaths.empty();
     }
 
+    public boolean isDrawingEmpty(){
+        return mDrawnPaths.empty();
+    }
+
     boolean redo() {
         if (!mRedoPaths.empty()) {
             mDrawnPaths.push(mRedoPaths.pop());
