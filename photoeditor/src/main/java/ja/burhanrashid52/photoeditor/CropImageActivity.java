@@ -64,20 +64,22 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
     }
 
     private String saveImage(Bitmap bitmap, String path) {
-        String file = path;
+        String extension = path.substring(path.lastIndexOf("."));
+        File file = new File(path.replace(extension, "_croped"+extension));
+        String fileName = file.getPath();
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
-            File f = new File(file);
+            File f = new File(fileName);
             f.createNewFile();
             FileOutputStream fo = new FileOutputStream(f);
             fo.write(bytes.toByteArray());
             fo.close();
         } catch (IOException e) {
             e.printStackTrace();
-            file = null;
+            fileName = null;
         }
-        return file;
+        return fileName;
     }
 
     @Override
