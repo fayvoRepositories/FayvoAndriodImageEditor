@@ -793,7 +793,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                         super.onPostExecute(e);
                         if (e == null) {
                             //Clear all views if its enabled in save settings
-                            if (saveSettings.isClearViewsEnabled()) clearAllViews();
+//                            if (saveSettings.isClearViewsEnabled()) clearAllViews();
                             onSaveListener.onSuccess(imagePath);
                         } else {
                             onSaveListener.onFailure(e);
@@ -905,7 +905,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                     protected void onPostExecute(Bitmap bitmap) {
                         super.onPostExecute(bitmap);
                         if (bitmap != null) {
-                            if (saveSettings.isClearViewsEnabled()) clearAllViews();
+//                            if (saveSettings.isClearViewsEnabled()) clearAllViews();
                             onSaveBitmap.onBitmapReady(bitmap);
                         } else {
                             onSaveBitmap.onFailure(new Exception("Failed to load the bitmap"));
