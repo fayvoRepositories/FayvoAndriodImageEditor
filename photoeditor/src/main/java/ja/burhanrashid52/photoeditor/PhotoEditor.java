@@ -161,6 +161,7 @@ public class PhotoEditor implements BrushViewChangeListener {
     @SuppressLint("ClickableViewAccessibility")
     public void addText(@Nullable Typeface textTypeface, String text, final int colorCodeTextView, final View delete, final int size) {
         isBurshEnable = false;
+
         brushDrawingView.setBrushDrawingMode(false);
         final View textRootView = getLayout(ViewType.TEXT);
         final TextView textInputTv = textRootView.findViewById(R.id.tvPhotoEditorText);
@@ -442,6 +443,9 @@ public class PhotoEditor implements BrushViewChangeListener {
     public void setBrushDrawingMode(boolean brushDrawingMode) {
         if (brushDrawingView != null) {
             isBurshEnable = brushDrawingMode;
+            if(isBurshEnable){
+                brushDrawingView.bringToFront();
+            }
             brushDrawingView.setBrushDrawingMode(brushDrawingMode);
 
         }
@@ -905,7 +909,6 @@ public class PhotoEditor implements BrushViewChangeListener {
                     protected void onPostExecute(Bitmap bitmap) {
                         super.onPostExecute(bitmap);
                         if (bitmap != null) {
-//                            if (saveSettings.isClearViewsEnabled()) clearAllViews();
                             onSaveBitmap.onBitmapReady(bitmap);
                         } else {
                             onSaveBitmap.onFailure(new Exception("Failed to load the bitmap"));
