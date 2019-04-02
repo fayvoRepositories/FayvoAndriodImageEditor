@@ -87,6 +87,7 @@ public class PhotoEditorView extends RelativeLayout {
         brushParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         brushParam.addRule(RelativeLayout.ALIGN_TOP, imgSrcId);
         brushParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId);
+        brushParam.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 
         //Setup GLSurface attributes
         mImageFilterView = new ImageFilterView(getContext());
