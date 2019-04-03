@@ -155,6 +155,9 @@ class MultiTouchListener implements OnTouchListener {
                 break;
             case MotionEvent.ACTION_CANCEL:
                 Log.d("Drag ", "ACTION_CANCEL");
+                if (deleteView != null) {
+                    deleteView.setVisibility(View.GONE);
+                }
                 mActivePointerId = INVALID_POINTER_ID;
 
                 break;

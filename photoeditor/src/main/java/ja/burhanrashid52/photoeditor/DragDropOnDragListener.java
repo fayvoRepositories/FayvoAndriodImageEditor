@@ -24,22 +24,16 @@ public class DragDropOnDragListener implements View.OnDragListener {
         int dragAction = dragEvent.getAction();
         if (dragAction == dragEvent.ACTION_DRAG_STARTED) {
             view.setVisibility(View.VISIBLE);
-
             // Check whether the dragged view can be placed in this target view or not.
-
             ClipDescription clipDescription = dragEvent.getClipDescription();
-
             if (clipDescription.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-
                 // Return true because the target view can accept the dragged object.
                 return true;
-
             }
         } else if (dragAction == dragEvent.ACTION_DRAG_ENTERED) {
             view.setVisibility(View.VISIBLE);
             // When the being dragged view enter the target view, change the target view background color.
 //            changeTargetViewBackground(view, Color.GREEN);
-
             return true;
         } else if (dragAction == dragEvent.ACTION_DRAG_EXITED) {
             view.setVisibility(View.VISIBLE);
@@ -66,7 +60,8 @@ public class DragDropOnDragListener implements View.OnDragListener {
 
             return true;
 
-        } else if (dragAction == dragEvent.ACTION_DROP) {
+        }
+        else if (dragAction == dragEvent.ACTION_DROP) {
 //            ivDelete.setVisibility(View.GONE);
             // When drop action happened.
 //            view.setVisibility(View.GONE);
@@ -115,8 +110,7 @@ public class DragDropOnDragListener implements View.OnDragListener {
         } else if (dragAction == dragEvent.ACTION_DRAG_LOCATION) {
             view.setVisibility(View.VISIBLE);
             return false;
-        }else
-        {
+        } else {
             view.setVisibility(View.GONE);
 //            Toast.makeText(context, "Drag and drop unknow action type.", Toast.LENGTH_LONG).show();
         }

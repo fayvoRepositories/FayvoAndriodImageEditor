@@ -151,6 +151,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 .setPinchTextScalable(true) // set flag to make text scalable when pinch
                 //.setDefaultTextTypeface(mTextRobotoTf)
                 //.setDefaultEmojiTypeface(mEmojiTypeFace)
+        .setDeleteView(ivDelete)
                 .build(); // build photo editor sdk
         ivDelete.setOnDragListener(new DragDropOnDragListener(mPhotoEditor));
         mPhotoEditor.setOnPhotoEditorListener(this);

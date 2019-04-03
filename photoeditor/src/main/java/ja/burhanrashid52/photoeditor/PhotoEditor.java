@@ -62,7 +62,6 @@ public class PhotoEditor implements BrushViewChangeListener {
     private Typeface mDefaultTextTypeface;
     private Typeface mDefaultEmojiTypeface;
     private boolean isBurshEnable = false;
-    RelativeLayout.LayoutParams lp;
 
 
     private PhotoEditor(Builder builder) {
@@ -162,7 +161,6 @@ public class PhotoEditor implements BrushViewChangeListener {
     @SuppressLint("ClickableViewAccessibility")
     public void addText(@Nullable Typeface textTypeface, String text, final int colorCodeTextView, final View delete, final int size) {
         isBurshEnable = false;
-
         brushDrawingView.setBrushDrawingMode(false);
         final View textRootView = getLayout(ViewType.TEXT);
         final TextView textInputTv = textRootView.findViewById(R.id.tvPhotoEditorText);
@@ -444,14 +442,6 @@ public class PhotoEditor implements BrushViewChangeListener {
     public void setBrushDrawingMode(boolean brushDrawingMode) {
         if (brushDrawingView != null) {
             isBurshEnable = brushDrawingMode;
-            /*if (isBurshEnable) {
-                lp = (RelativeLayout.LayoutParams) brushDrawingView.getLayoutParams();
-                brushDrawingView.bringToFront();
-            } else {
-                if (lp != null) {
-                    brushDrawingView.setLayoutParams(lp);
-                }
-            }*/
             brushDrawingView.setBrushDrawingMode(brushDrawingMode);
 
         }
@@ -1031,7 +1021,7 @@ public class PhotoEditor implements BrushViewChangeListener {
             brushDrawingView = photoEditorView.getBrushDrawingView();
         }
 
-        Builder setDeleteView(View deleteView) {
+        public Builder setDeleteView(View deleteView) {
             this.deleteView = deleteView;
             return this;
         }
