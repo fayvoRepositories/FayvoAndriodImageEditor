@@ -374,7 +374,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                 parentView,
                 this.imageView,
                 isTextPinchZoomable,
-                mOnPhotoEditorListener);
+                mOnPhotoEditorListener, this);
 
         //multiTouchListener.setOnMultiTouchListener(this);
 

@@ -1,7 +1,5 @@
 package ja.burhanrashid52.photoeditor;
 
-import android.content.ClipData;
-import android.content.ClipDescription;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -9,8 +7,14 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+
+import com.transitionseverywhere.ArcMotion;
+import com.transitionseverywhere.ChangeBounds;
+import com.transitionseverywhere.TransitionManager;
 
 /**
  * Created on 18/01/2017.
@@ -42,12 +46,15 @@ class MultiTouchListener implements OnTouchListener {
     private boolean mIsTextPinchZoomable;
     private OnPhotoEditorListener mOnPhotoEditorListener;
 
+    private PhotoEditor mPhotoEditor;
+
     MultiTouchListener(@Nullable View deleteView, RelativeLayout parentView,
                        ImageView photoEditImageView, boolean isTextPinchZoomable,
-                       OnPhotoEditorListener onPhotoEditorListener) {
+                       OnPhotoEditorListener onPhotoEditorListener, PhotoEditor mPhotoEditor) {
         mIsTextPinchZoomable = isTextPinchZoomable;
         mScaleGestureDetector = new ScaleGestureDetector(new ScaleGestureListener());
         mGestureListener = new GestureDetector(new GestureListener());
+        this.mPhotoEditor = mPhotoEditor;
         this.deleteView = deleteView;
         this.parentView = parentView;
         this.photoEditImageView = photoEditImageView;
@@ -111,6 +118,9 @@ class MultiTouchListener implements OnTouchListener {
         view.setTranslationY(view.getTranslationY() - offsetY);
     }
 
+    int width = 0;
+    int height = 0;
+
     @Override
     public boolean onTouch(View view, MotionEvent event) {
         mScaleGestureDetector.onTouchEvent(view, event);
@@ -127,6 +137,12 @@ class MultiTouchListener implements OnTouchListener {
 
         switch (action & event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                if (width == 0) {
+                    width = view.getWidth();
+                }
+                if (height == 0) {
+                    height = view.getHeight();
+                }
                 Log.d("Drag ", "ACTION_DOWN");
                 mPrevX = event.getX();
                 mPrevY = event.getY();
@@ -152,11 +168,30 @@ class MultiTouchListener implements OnTouchListener {
                         adjustTranslation(view, currX - mPrevX, currY - mPrevY);
                     }
                 }
+                if (deleteView != null) {
+                    boolean isOverlap = isViewOverlapping(view, deleteView);
+                    Log.d("Overlap ", " " + isOverlap);
+                    /*if (isOverlap) {
+                        TransitionManager.beginDelayedTransition((ViewGroup) view,
+                                new ChangeBounds().setPathMotion(new ArcMotion()).setDuration(500));
+                        RelativeLayout.LayoutParams linearParam = (RelativeLayout.LayoutParams) view.getLayoutParams();
+                        linearParam.width = width / 2;
+                        linearParam.height = height / 2;
+                        view.setLayoutParams(linearParam);
+                    } else {
+                        TransitionManager.beginDelayedTransition((ViewGroup) view,
+                                new ChangeBounds().setPathMotion(new ArcMotion()).setDuration(500));
+                        RelativeLayout.LayoutParams linearParam = (RelativeLayout.LayoutParams) view.getLayoutParams();
+                        linearParam.width = width;
+                        linearParam.height = height;
+                        view.setLayoutParams(linearParam);
+                    }*/
+                }
                 break;
             case MotionEvent.ACTION_CANCEL:
                 Log.d("Drag ", "ACTION_CANCEL");
                 if (deleteView != null) {
-                    deleteView.setVisibility(View.GONE);
+                    deleteView.setVisibility(View.VISIBLE);
                 }
                 mActivePointerId = INVALID_POINTER_ID;
 
@@ -172,6 +207,13 @@ class MultiTouchListener implements OnTouchListener {
                 }
 
                 firePhotoEditorSDKListener(view, false);
+                if (deleteView != null) {
+                    if (isViewOverlapping(view, deleteView)) {
+                        mPhotoEditor.viewUndo(view, ViewType.TEXT);
+                    }
+                    deleteView.setVisibility(View.GONE);
+
+                }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
 
@@ -184,9 +226,28 @@ class MultiTouchListener implements OnTouchListener {
                     mPrevY = event.getY(newPointerIndex);
                     mActivePointerId = event.getPointerId(newPointerIndex);
                 }
+                if (deleteView != null) {
+                    if (isViewOverlapping(view, deleteView)) {
+                        mPhotoEditor.viewUndo(view, ViewType.TEXT);
+                    }
+                    deleteView.setVisibility(View.GONE);
+                }
                 break;
         }
         return true;
+    }
+
+    private boolean isViewOverlapping(View firstView, View secondView) {
+        int[] firstPosition = new int[2];
+        int[] secondPosition = new int[2];
+
+        firstView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        firstView.getLocationOnScreen(firstPosition);
+        secondView.getLocationOnScreen(secondPosition);
+
+        int r = firstView.getMeasuredWidth() + firstPosition[0];
+        int l = secondPosition[0];
+        return r >= l && (r != 0 && l != 0);
     }
 
     private void firePhotoEditorSDKListener(View view, boolean isStart) {

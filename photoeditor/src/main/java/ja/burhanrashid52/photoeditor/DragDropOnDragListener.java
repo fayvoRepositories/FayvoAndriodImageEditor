@@ -42,7 +42,7 @@ public class DragDropOnDragListener implements View.OnDragListener {
 
             return true;
         } else if (dragAction == dragEvent.ACTION_DRAG_ENDED) {
-            view.setVisibility(View.GONE);
+
             // When the drop ended reset target view background color.
 //            resetTargetViewBackground(view);
 
@@ -50,12 +50,13 @@ public class DragDropOnDragListener implements View.OnDragListener {
             // Get drag and drop action result.
             boolean result = dragEvent.getResult();
 
+            view.setVisibility(View.GONE);
             // result is true means drag and drop action success.
             if (result) {
 //                Toast.makeText(context, "Drag and drop action complete successfully.", Toast.LENGTH_LONG).show();
             } else {
 //                Toast.makeText(context, "Drag and drop action failed.", Toast.LENGTH_LONG).show();
-                view.setVisibility(View.VISIBLE);
+                view.setVisibility(View.GONE);
             }
 
             return true;
