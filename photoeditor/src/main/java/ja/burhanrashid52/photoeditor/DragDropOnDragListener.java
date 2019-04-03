@@ -42,7 +42,7 @@ public class DragDropOnDragListener implements View.OnDragListener {
 
             return true;
         } else if (dragAction == dragEvent.ACTION_DRAG_EXITED) {
-            view.setVisibility(View.GONE);
+            view.setVisibility(View.VISIBLE);
             // When the being dragged view exit target view area, clear the background color.
 //            resetTargetViewBackground(view);
 
@@ -107,13 +107,13 @@ public class DragDropOnDragListener implements View.OnDragListener {
 
                 mPhotoEditor.viewUndo(srcView, ViewType.TEXT);
 
-                view.setVisibility(View.GONE);
+                view.setVisibility(View.VISIBLE);
                 // Returns true to make DragEvent.getResult() value to true.
                 return true;
             }
 
         } else if (dragAction == dragEvent.ACTION_DRAG_LOCATION) {
-//            ivDelete.setVisibility(View.VISIBLE);
+            view.setVisibility(View.VISIBLE);
             return false;
         }else
         {

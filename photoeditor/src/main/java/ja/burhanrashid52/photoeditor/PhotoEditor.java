@@ -444,14 +444,14 @@ public class PhotoEditor implements BrushViewChangeListener {
     public void setBrushDrawingMode(boolean brushDrawingMode) {
         if (brushDrawingView != null) {
             isBurshEnable = brushDrawingMode;
-            if (isBurshEnable) {
+            /*if (isBurshEnable) {
                 lp = (RelativeLayout.LayoutParams) brushDrawingView.getLayoutParams();
                 brushDrawingView.bringToFront();
             } else {
                 if (lp != null) {
                     brushDrawingView.setLayoutParams(lp);
                 }
-            }
+            }*/
             brushDrawingView.setBrushDrawingMode(brushDrawingMode);
 
         }
