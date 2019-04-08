@@ -105,7 +105,7 @@ public class BrushDrawingView extends View {
         this.mBrushDrawMode = brushDrawMode;
         if (brushDrawMode) {
             this.setVisibility(View.VISIBLE);
-//            refreshBrushDrawing();
+            refreshBrushDrawing();
         }
     }
 
