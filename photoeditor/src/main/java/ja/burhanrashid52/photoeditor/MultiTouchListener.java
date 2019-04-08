@@ -7,14 +7,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-
-import com.transitionseverywhere.ArcMotion;
-import com.transitionseverywhere.ChangeBounds;
-import com.transitionseverywhere.TransitionManager;
 
 /**
  * Created on 18/01/2017.
@@ -169,23 +163,12 @@ class MultiTouchListener implements OnTouchListener {
                     }
                 }
                 if (deleteView != null) {
-                    boolean isOverlap = isViewOverlapping(view, deleteView);
-                    Log.d("Overlap ", " " + isOverlap);
-                    /*if (isOverlap) {
-                        TransitionManager.beginDelayedTransition((ViewGroup) view,
-                                new ChangeBounds().setPathMotion(new ArcMotion()).setDuration(500));
-                        RelativeLayout.LayoutParams linearParam = (RelativeLayout.LayoutParams) view.getLayoutParams();
-                        linearParam.width = width / 2;
-                        linearParam.height = height / 2;
-                        view.setLayoutParams(linearParam);
-                    } else {
-                        TransitionManager.beginDelayedTransition((ViewGroup) view,
-                                new ChangeBounds().setPathMotion(new ArcMotion()).setDuration(500));
-                        RelativeLayout.LayoutParams linearParam = (RelativeLayout.LayoutParams) view.getLayoutParams();
-                        linearParam.width = width;
-                        linearParam.height = height;
-                        view.setLayoutParams(linearParam);
-                    }*/
+                    final Rect imageViewArea = new Rect();
+                    deleteView.getGlobalVisibleRect(imageViewArea);
+                    if(imageViewArea.contains(x, y)) {
+                        // swipe is passing over ImageView....
+                        Log.d("Overlap ", " " + true);
+                    }
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
@@ -208,9 +191,14 @@ class MultiTouchListener implements OnTouchListener {
 
                 firePhotoEditorSDKListener(view, false);
                 if (deleteView != null) {
-                    if (isViewOverlapping(view, deleteView)) {
+                    final Rect imageViewArea = new Rect();
+                    deleteView.getGlobalVisibleRect(imageViewArea);
+                    if(imageViewArea.contains(x, y)) {
+                        // swipe is passing over ImageView....
+                        Log.d("Overlap ", " " + true);
                         mPhotoEditor.viewUndo(view, ViewType.TEXT);
                     }
+
                     deleteView.setVisibility(View.GONE);
 
                 }
@@ -227,7 +215,7 @@ class MultiTouchListener implements OnTouchListener {
                     mActivePointerId = event.getPointerId(newPointerIndex);
                 }
                 if (deleteView != null) {
-                    if (isViewOverlapping(view, deleteView)) {
+                    if (isViewOverlapping(view, deleteView, mPrevRawX, mPrevRawY)) {
                         mPhotoEditor.viewUndo(view, ViewType.TEXT);
                     }
                     deleteView.setVisibility(View.GONE);
@@ -237,15 +225,22 @@ class MultiTouchListener implements OnTouchListener {
         return true;
     }
 
-    private boolean isViewOverlapping(View firstView, View secondView) {
+    private boolean isViewOverlapping(View firstView, View secondView, float x, float y) {
         int[] firstPosition = new int[2];
         int[] secondPosition = new int[2];
+
+
+        firstPosition[0] = (int) x;
+        firstPosition[1] = (int) y;
 
         firstView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         firstView.getLocationOnScreen(firstPosition);
         secondView.getLocationOnScreen(secondPosition);
-
-        int r = firstView.getMeasuredWidth() + firstPosition[0];
+        Log.d("finer x", x+"");
+        Log.d("finer y", y+"");
+        Log.d("delete y", firstView.getX()+"");
+        Log.d("delete y", firstView.getY()+"");
+        int r = 10 + firstPosition[0];
         int l = secondPosition[0];
         return r >= l && (r != 0 && l != 0);
     }
