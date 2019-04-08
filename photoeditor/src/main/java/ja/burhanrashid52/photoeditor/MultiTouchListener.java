@@ -116,6 +116,7 @@ class MultiTouchListener implements OnTouchListener {
 
     int width = 0;
     int height = 0;
+    boolean isScaleUp = true;
 
     @Override
     public boolean onTouch(View view, MotionEvent event) {
@@ -169,6 +170,7 @@ class MultiTouchListener implements OnTouchListener {
                     deleteView.getGlobalVisibleRect(imageViewArea);
                     if(imageViewArea.contains(x, y)) {
                         // swipe is passing over ImageView....
+
                         scaleDraggedView(view, false);
                         Log.d("Overlap ", " " + true);
                     }else{
@@ -177,7 +179,7 @@ class MultiTouchListener implements OnTouchListener {
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
-                scaleDraggedView(view, true);
+                scaleDraggedView(view, false);
                 Log.d("Drag ", "ACTION_CANCEL");
                 if (deleteView != null) {
                     deleteView.setVisibility(View.VISIBLE);
@@ -186,7 +188,7 @@ class MultiTouchListener implements OnTouchListener {
 
                 break;
             case MotionEvent.ACTION_UP:
-                scaleDraggedView(view, true);
+                scaleDraggedView(view, false);
                 Log.d("Drag ", "ACTION_UP");
                 mActivePointerId = INVALID_POINTER_ID;
                 if (deleteView != null && isViewInBounds(deleteView, x, y)) {
@@ -233,9 +235,9 @@ class MultiTouchListener implements OnTouchListener {
     }
 
     private void scaleDraggedView(View view, boolean scaleDown) {
-        boolean alreadyScaled = (scaleDown && view.getScaleX() < 1f) || (!scaleDown && view.getScaleX() == 1f);
+       /* boolean alreadyScaled = (scaleDown && view.getScaleX() < 1f) || (!scaleDown && view.getScaleX() == 1f);
         if (alreadyScaled)
-            return;
+            return;*/
         float from = scaleDown ? 1f : .4f;
         float to = scaleDown ? .4f : 1f;
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(view, "scaleX", from, to);
@@ -351,6 +353,8 @@ class MultiTouchListener implements OnTouchListener {
 
         void onLongClick();
     }
+
+
 
     void setOnGestureControl(OnGestureControl onGestureControl) {
         mOnGestureControl = onGestureControl;

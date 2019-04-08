@@ -108,7 +108,7 @@ public class PhotoEditor implements BrushViewChangeListener {
             @Override
             public void onLongClick() {
                 {
-                    delete.setVisibility(View.VISIBLE);
+                   /* delete.setVisibility(View.VISIBLE);
                     // Create a new ClipData.Item from the View object's tag
                     ClipData.Item item = new ClipData.Item((CharSequence) imageRootView.getTag().toString());
 
@@ -127,7 +127,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                             , dragshadow  // drag shadow
                             , imageRootView            // local data about the drag and drop operation
                             , 0          // flags set to 0 because not using currently
-                    );
+                    );*/
                 }
             }
         });
@@ -202,7 +202,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                 if (mOnPhotoEditorListener != null) {
                     mOnPhotoEditorListener.onEditTextChangeListener(textRootView, textInput, currentTextColor);
                 }*/
-                {
+                /*{
                     delete.setVisibility(View.VISIBLE);
                     // Create a new ClipData.Item from the View object's tag
                     ClipData.Item item = new ClipData.Item((CharSequence) textRootView.getTag().toString());
@@ -222,7 +222,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                             , textRootView            // local data about the drag and drop operation
                             , 0          // flags set to 0 because not using currently
                     );
-                }
+                }*/
             }
         });
 
@@ -317,7 +317,7 @@ public class PhotoEditor implements BrushViewChangeListener {
             @Override
             public void onLongClick() {
                 {
-                    delete.setVisibility(View.VISIBLE);
+                    /*delete.setVisibility(View.VISIBLE);
                     // Create a new ClipData.Item from the View object's tag
                     ClipData.Item item = new ClipData.Item((CharSequence) emojiRootView.getTag().toString());
 
@@ -335,7 +335,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                             , dragshadow  // drag shadow
                             , emojiRootView            // local data about the drag and drop operation
                             , 0          // flags set to 0 because not using currently
-                    );
+                    );*/
                 }
             }
         });
