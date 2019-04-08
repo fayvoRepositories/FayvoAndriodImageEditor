@@ -1,5 +1,7 @@
 package ja.burhanrashid52.photoeditor;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -167,11 +169,15 @@ class MultiTouchListener implements OnTouchListener {
                     deleteView.getGlobalVisibleRect(imageViewArea);
                     if(imageViewArea.contains(x, y)) {
                         // swipe is passing over ImageView....
+                        scaleDraggedView(view, false);
                         Log.d("Overlap ", " " + true);
+                    }else{
+                        scaleDraggedView(view, true);
                     }
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
+                scaleDraggedView(view, true);
                 Log.d("Drag ", "ACTION_CANCEL");
                 if (deleteView != null) {
                     deleteView.setVisibility(View.VISIBLE);
@@ -180,6 +186,7 @@ class MultiTouchListener implements OnTouchListener {
 
                 break;
             case MotionEvent.ACTION_UP:
+                scaleDraggedView(view, true);
                 Log.d("Drag ", "ACTION_UP");
                 mActivePointerId = INVALID_POINTER_ID;
                 if (deleteView != null && isViewInBounds(deleteView, x, y)) {
@@ -225,24 +232,50 @@ class MultiTouchListener implements OnTouchListener {
         return true;
     }
 
+    private void scaleDraggedView(View view, boolean scaleDown) {
+        boolean alreadyScaled = (scaleDown && view.getScaleX() < 1f) || (!scaleDown && view.getScaleX() == 1f);
+        if (alreadyScaled)
+            return;
+        float from = scaleDown ? 1f : .4f;
+        float to = scaleDown ? .4f : 1f;
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(view, "scaleX", from, to);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(view, "scaleY", from, to);
+        AnimatorSet scaleAnimSet = new AnimatorSet();
+        scaleAnimSet.play(scaleX).with(scaleY);
+        scaleAnimSet.setDuration(600);
+        scaleAnimSet.start();
+    }
+
     private boolean isViewOverlapping(View firstView, View secondView, float x, float y) {
         int[] firstPosition = new int[2];
         int[] secondPosition = new int[2];
-
-
         firstPosition[0] = (int) x;
         firstPosition[1] = (int) y;
-
         firstView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         firstView.getLocationOnScreen(firstPosition);
         secondView.getLocationOnScreen(secondPosition);
-        Log.d("finer x", x+"");
-        Log.d("finer y", y+"");
-        Log.d("delete y", firstView.getX()+"");
-        Log.d("delete y", firstView.getY()+"");
         int r = 10 + firstPosition[0];
         int l = secondPosition[0];
         return r >= l && (r != 0 && l != 0);
+    }
+
+    private void objectAnimator(View view){
+        ObjectAnimator scaleDownX = ObjectAnimator.ofFloat(view, "scaleX", 0.7f);
+        ObjectAnimator scaleDownY = ObjectAnimator.ofFloat(view, "scaleY", 0.7f);
+        scaleDownX.setDuration(1500);
+        scaleDownY.setDuration(1500);
+
+        ObjectAnimator moveUpY = ObjectAnimator.ofFloat(view, "translationY", -100);
+        moveUpY.setDuration(1500);
+
+        AnimatorSet scaleDown = new AnimatorSet();
+        AnimatorSet moveUp = new AnimatorSet();
+
+        scaleDown.play(scaleDownX).with(scaleDownY);
+        moveUp.play(moveUpY);
+
+        scaleDown.start();
+        moveUp.start();
     }
 
     private void firePhotoEditorSDKListener(View view, boolean isStart) {
