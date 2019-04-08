@@ -18,7 +18,7 @@ import android.widget.RelativeLayout;
  * @author <a href="https://github.com/burhanrashid52">Burhanuddin Rashid</a>
  * <p></p>
  */
-class MultiTouchListener implements OnTouchListener {
+public class MultiTouchListener implements OnTouchListener {
 
     private static final int INVALID_POINTER_ID = -1;
     private final GestureDetector mGestureListener;
@@ -361,7 +361,7 @@ class MultiTouchListener implements OnTouchListener {
     }
 
 
-    interface DragDeleteListener{
+    public interface DragDeleteListener{
         void onMove();
         void onTouch();
         void onStop();
