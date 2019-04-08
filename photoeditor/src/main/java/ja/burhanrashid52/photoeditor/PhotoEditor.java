@@ -58,6 +58,7 @@ public class PhotoEditor implements BrushViewChangeListener {
     private List<View> addedViews;
     private List<View> redoViews;
     private OnPhotoEditorListener mOnPhotoEditorListener;
+    private MultiTouchListener.DragDeleteListener dragDeleteListener;
     private boolean isTextPinchZoomable;
     private Typeface mDefaultTextTypeface;
     private Typeface mDefaultEmojiTypeface;
@@ -73,6 +74,7 @@ public class PhotoEditor implements BrushViewChangeListener {
         this.isTextPinchZoomable = builder.isTextPinchZoomable;
         this.mDefaultTextTypeface = builder.textTypeface;
         this.mDefaultEmojiTypeface = builder.emojiTypeface;
+        this.dragDeleteListener = builder.dragDeleteListener;
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         brushDrawingView.setBrushViewChangeListener(this);
         addedViews = new ArrayList<>();
@@ -374,7 +376,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                 parentView,
                 this.imageView,
                 isTextPinchZoomable,
-                mOnPhotoEditorListener, this);
+                mOnPhotoEditorListener, this, dragDeleteListener);
 
         //multiTouchListener.setOnMultiTouchListener(this);
 
@@ -1006,6 +1008,7 @@ public class PhotoEditor implements BrushViewChangeListener {
         private Typeface emojiTypeface;
         //By Default pinch zoom on text is enabled
         private boolean isTextPinchZoomable = true;
+        private MultiTouchListener.DragDeleteListener dragDeleteListener;
 
         /**
          * Building a PhotoEditor which requires a Context and PhotoEditorView
@@ -1045,6 +1048,11 @@ public class PhotoEditor implements BrushViewChangeListener {
          */
         public Builder setDefaultEmojiTypeface(Typeface emojiTypeface) {
             this.emojiTypeface = emojiTypeface;
+            return this;
+        }
+
+        public Builder setdragDeleteListener(MultiTouchListener.DragDeleteListener dragDeleteListener) {
+            this.dragDeleteListener = dragDeleteListener;
             return this;
         }
 

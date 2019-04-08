@@ -39,6 +39,7 @@ class MultiTouchListener implements OnTouchListener {
 
     private OnMultiTouchListener onMultiTouchListener;
     private OnGestureControl mOnGestureControl;
+    private DragDeleteListener dragDeleteListener;
     private boolean mIsTextPinchZoomable;
     private OnPhotoEditorListener mOnPhotoEditorListener;
 
@@ -46,8 +47,9 @@ class MultiTouchListener implements OnTouchListener {
 
     MultiTouchListener(@Nullable View deleteView, RelativeLayout parentView,
                        ImageView photoEditImageView, boolean isTextPinchZoomable,
-                       OnPhotoEditorListener onPhotoEditorListener, PhotoEditor mPhotoEditor) {
+                       OnPhotoEditorListener onPhotoEditorListener, PhotoEditor mPhotoEditor, DragDeleteListener dragDeleteListener) {
         mIsTextPinchZoomable = isTextPinchZoomable;
+        this.dragDeleteListener = dragDeleteListener;
         mScaleGestureDetector = new ScaleGestureDetector(new ScaleGestureListener());
         mGestureListener = new GestureDetector(new GestureListener());
         this.mPhotoEditor = mPhotoEditor;
@@ -134,6 +136,7 @@ class MultiTouchListener implements OnTouchListener {
 
         switch (action & event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                dragDeleteListener.onTouch();
                 if (width == 0) {
                     width = view.getWidth();
                 }
@@ -165,6 +168,7 @@ class MultiTouchListener implements OnTouchListener {
                         adjustTranslation(view, currX - mPrevX, currY - mPrevY);
                     }
                 }
+                dragDeleteListener.onMove();
                 if (deleteView != null) {
                     final Rect imageViewArea = new Rect();
                     deleteView.getGlobalVisibleRect(imageViewArea);
@@ -179,6 +183,7 @@ class MultiTouchListener implements OnTouchListener {
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
+                dragDeleteListener.onStop();
                 scaleDraggedView(view, false);
                 Log.d("Drag ", "ACTION_CANCEL");
                 if (deleteView != null) {
@@ -188,6 +193,7 @@ class MultiTouchListener implements OnTouchListener {
 
                 break;
             case MotionEvent.ACTION_UP:
+                dragDeleteListener.onStop();
                 scaleDraggedView(view, false);
                 Log.d("Drag ", "ACTION_UP");
                 mActivePointerId = INVALID_POINTER_ID;
@@ -213,7 +219,7 @@ class MultiTouchListener implements OnTouchListener {
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
-
+                dragDeleteListener.onStop();
                 Log.d("Drag ", "ACTION_POINTER_UP");
                 int pointerIndexPointerUp = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                 int pointerId = event.getPointerId(pointerIndexPointerUp);
@@ -355,6 +361,11 @@ class MultiTouchListener implements OnTouchListener {
     }
 
 
+    interface DragDeleteListener{
+        void onMove();
+        void onTouch();
+        void onStop();
+    }
 
     void setOnGestureControl(OnGestureControl onGestureControl) {
         mOnGestureControl = onGestureControl;
