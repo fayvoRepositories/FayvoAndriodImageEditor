@@ -2,24 +2,13 @@ package com.burhanrashid52.imageeditor;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ClipData;
-import android.content.ClipDescription;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.AssetManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -30,21 +19,15 @@ import android.support.constraint.ConstraintSet;
 import android.support.transition.ChangeBounds;
 import android.support.transition.TransitionManager;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.DragEvent;
-import android.view.TouchDelegate;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AnticipateOvershootInterpolator;
 import android.view.animation.TranslateAnimation;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.burhanrashid52.imageeditor.base.BaseActivity;
@@ -58,7 +41,6 @@ import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
 import com.nbsp.materialfilepicker.MaterialFilePicker;
-import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -67,11 +49,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import ja.burhanrashid52.photoeditor.DragDropOnDragListener;
 import ja.burhanrashid52.photoeditor.ImageCroper;
 import ja.burhanrashid52.photoeditor.ImagePath;
+import ja.burhanrashid52.photoeditor.MultiTouchListener;
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 import ja.burhanrashid52.photoeditor.OnSaveBitmap;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
@@ -87,7 +69,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         View.OnClickListener,
         PropertiesBSFragment.Properties,
         EmojiBSFragment.EmojiListener,
-        StickerBSFragment.StickerListener, EditingToolsAdapter.OnItemSelected, FilterListener {
+        StickerBSFragment.StickerListener, EditingToolsAdapter.OnItemSelected, FilterListener,
+        MultiTouchListener.DragDeleteListener {
 
     private static final String TAG = EditImageActivity.class.getSimpleName();
     public static final String EXTRA_IMAGE_PATHS = "extra_image_paths";
@@ -154,7 +137,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 .setPinchTextScalable(true) // set flag to make text scalable when pinch
                 //.setDefaultTextTypeface(mTextRobotoTf)
                 //.setDefaultEmojiTypeface(mEmojiTypeFace)
-        .setDeleteView(ivDelete)
+                .setdragDeleteListener(this)
+                .setDeleteView(ivDelete)
                 .build(); // build photo editor sdk
         ivDelete.setOnDragListener(new DragDropOnDragListener(mPhotoEditor));
         mPhotoEditor.setOnPhotoEditorListener(this);
@@ -199,6 +183,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         filters.add(PhotoFilter.CROSS_PROCESS);
         filters.add(PhotoFilter.BLACK_WHITE);
     }
+
     private void execFFmpegBinary(final String[] command) {
         try {
             ffmpeg.execute(command, new ExecuteBinaryResponseHandler() {
@@ -467,7 +452,6 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                             hideLoading();
 
 
-
                             showSnackbar("Image Saved Successfully");
                             mPhotoEditorView.getSource().setImageURI(Uri.fromFile(new File(imagePath)));
 
@@ -479,7 +463,6 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                                     "-filter_complex",
                                     "[1][0]scale2ref[i][m];[m][i]overlay[v]", "-map",
                                     "[v]", "-map", "0:a?", "-ac", "2", outputPath};
-
 
 
 //                          String[] cmd  = command.split(" ");
@@ -800,4 +783,18 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
     }
 
+    @Override
+    public void onMove() {
+
+    }
+
+    @Override
+    public void onTouch() {
+
+    }
+
+    @Override
+    public void onDragStop() {
+
+    }
 }

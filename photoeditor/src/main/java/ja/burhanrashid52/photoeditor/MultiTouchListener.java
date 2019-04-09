@@ -172,19 +172,22 @@ public class MultiTouchListener implements OnTouchListener {
                 if (deleteView != null) {
                     final Rect imageViewArea = new Rect();
                     deleteView.getGlobalVisibleRect(imageViewArea);
-                    if(imageViewArea.contains(x, y)) {
+                    if (imageViewArea.contains(x, y)) {
                         // swipe is passing over ImageView....
-
-                        scaleDraggedView(view, false);
-                        Log.d("Overlap ", " " + true);
-                    }else{
+                        Log.d("Scale pre x", view.getScaleX() + "");
+                        Log.d("Scale pre, y", view.getScaleY() + "");
                         scaleDraggedView(view, true);
+                        Log.d("Overlap ", " " + true);
+                    } else {
+                        Log.d("Scale pre x", view.getScaleX() + "");
+                        Log.d("Scale pre, y", view.getScaleY() + "");
+                        scaleDraggedView(view, false);
                     }
                 }
+
                 break;
             case MotionEvent.ACTION_CANCEL:
                 dragDeleteListener.onDragStop();
-                scaleDraggedView(view, false);
                 Log.d("Drag ", "ACTION_CANCEL");
                 if (deleteView != null) {
                     deleteView.setVisibility(View.VISIBLE);
@@ -194,7 +197,6 @@ public class MultiTouchListener implements OnTouchListener {
                 break;
             case MotionEvent.ACTION_UP:
                 dragDeleteListener.onDragStop();
-                scaleDraggedView(view, false);
                 Log.d("Drag ", "ACTION_UP");
                 mActivePointerId = INVALID_POINTER_ID;
                 if (deleteView != null && isViewInBounds(deleteView, x, y)) {
@@ -208,7 +210,7 @@ public class MultiTouchListener implements OnTouchListener {
                 if (deleteView != null) {
                     final Rect imageViewArea = new Rect();
                     deleteView.getGlobalVisibleRect(imageViewArea);
-                    if(imageViewArea.contains(x, y)) {
+                    if (imageViewArea.contains(x, y)) {
                         // swipe is passing over ImageView....
                         Log.d("Overlap ", " " + true);
                         mPhotoEditor.viewUndo(view, ViewType.TEXT);
@@ -219,7 +221,6 @@ public class MultiTouchListener implements OnTouchListener {
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
-                dragDeleteListener.onDragStop();
                 Log.d("Drag ", "ACTION_POINTER_UP");
                 int pointerIndexPointerUp = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                 int pointerId = event.getPointerId(pointerIndexPointerUp);
@@ -241,16 +242,21 @@ public class MultiTouchListener implements OnTouchListener {
     }
 
     private void scaleDraggedView(View view, boolean scaleDown) {
-       /* boolean alreadyScaled = (scaleDown && view.getScaleX() < 1f) || (!scaleDown && view.getScaleX() == 1f);
+        boolean alreadyScaled = (scaleDown && view.getScaleX() < 0.8f) || (!scaleDown && view.getScaleX() >0.8f);
         if (alreadyScaled)
-            return;*/
+            return;
         float from = scaleDown ? 1f : .4f;
         float to = scaleDown ? .4f : 1f;
+       if(!scaleDown){
+           from = 1f;
+           to = 1f;
+       }
+
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(view, "scaleX", from, to);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(view, "scaleY", from, to);
         AnimatorSet scaleAnimSet = new AnimatorSet();
         scaleAnimSet.play(scaleX).with(scaleY);
-        scaleAnimSet.setDuration(600);
+//        scaleAnimSet.setDuration(600);
         scaleAnimSet.start();
     }
 
@@ -267,7 +273,7 @@ public class MultiTouchListener implements OnTouchListener {
         return r >= l && (r != 0 && l != 0);
     }
 
-    private void objectAnimator(View view){
+    private void objectAnimator(View view) {
         ObjectAnimator scaleDownX = ObjectAnimator.ofFloat(view, "scaleX", 0.7f);
         ObjectAnimator scaleDownY = ObjectAnimator.ofFloat(view, "scaleY", 0.7f);
         scaleDownX.setDuration(1500);
@@ -361,9 +367,11 @@ public class MultiTouchListener implements OnTouchListener {
     }
 
 
-    public interface DragDeleteListener{
+    public interface DragDeleteListener {
         void onMove();
+
         void onTouch();
+
         void onDragStop();
     }
 

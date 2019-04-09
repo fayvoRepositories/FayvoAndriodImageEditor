@@ -2,6 +2,7 @@ package com.burhanrashid52.imageeditor;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -24,6 +25,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Created by Burhanuddin Rashid on 1/16/2018.
@@ -150,7 +152,6 @@ public class TextEditorDialogFragment extends DialogFragment implements SeekBar.
         });
 
     }
-
 
     //Callback to listener if user is done with text editing
     public void setOnTextEditorListener(TextEditor textEditor) {
