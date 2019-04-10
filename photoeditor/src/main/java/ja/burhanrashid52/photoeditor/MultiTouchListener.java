@@ -1,5 +1,6 @@
 package ja.burhanrashid52.photoeditor;
 
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.graphics.Rect;
@@ -44,6 +45,8 @@ public class MultiTouchListener implements OnTouchListener {
     private OnPhotoEditorListener mOnPhotoEditorListener;
 
     private PhotoEditor mPhotoEditor;
+    boolean isAnimationWorking = false;
+    float lastScaleX = 0;
 
     MultiTouchListener(@Nullable View deleteView, RelativeLayout parentView,
                        ImageView photoEditImageView, boolean isTextPinchZoomable,
@@ -231,9 +234,6 @@ public class MultiTouchListener implements OnTouchListener {
                     mActivePointerId = event.getPointerId(newPointerIndex);
                 }
                 if (deleteView != null) {
-                    if (isViewOverlapping(view, deleteView, mPrevRawX, mPrevRawY)) {
-                        mPhotoEditor.viewUndo(view, ViewType.TEXT);
-                    }
                     deleteView.setVisibility(View.GONE);
                 }
                 break;
@@ -242,55 +242,48 @@ public class MultiTouchListener implements OnTouchListener {
     }
 
     private void scaleDraggedView(View view, boolean scaleDown) {
-        boolean alreadyScaled = (scaleDown && view.getScaleX() < 0.8f) || (!scaleDown && view.getScaleX() >0.8f);
-        if (alreadyScaled)
-            return;
-        float from = scaleDown ? 1f : .4f;
-        float to = scaleDown ? .4f : 1f;
-       if(!scaleDown){
-           from = 1f;
-           to = 1f;
-       }
 
+        if (isAnimationWorking) {
+            return;
+        }
+        if (!scaleDown) {
+            if (view.getScaleX() > 0.31)
+                lastScaleX = view.getScaleX();
+        }
+        boolean alreadyScaled = (scaleDown && view.getScaleX() < 0.4f) || (!scaleDown && view.getScaleX() > 0.4f);
+        if (alreadyScaled) {
+            return;
+        }
+        float from = scaleDown ? lastScaleX : .3f;
+        float to = scaleDown ? .3f : lastScaleX;
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(view, "scaleX", from, to);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(view, "scaleY", from, to);
         AnimatorSet scaleAnimSet = new AnimatorSet();
         scaleAnimSet.play(scaleX).with(scaleY);
-//        scaleAnimSet.setDuration(600);
+        scaleAnimSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+                isAnimationWorking = true;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                isAnimationWorking = false;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
         scaleAnimSet.start();
     }
 
-    private boolean isViewOverlapping(View firstView, View secondView, float x, float y) {
-        int[] firstPosition = new int[2];
-        int[] secondPosition = new int[2];
-        firstPosition[0] = (int) x;
-        firstPosition[1] = (int) y;
-        firstView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        firstView.getLocationOnScreen(firstPosition);
-        secondView.getLocationOnScreen(secondPosition);
-        int r = 10 + firstPosition[0];
-        int l = secondPosition[0];
-        return r >= l && (r != 0 && l != 0);
-    }
-
-    private void objectAnimator(View view) {
-        ObjectAnimator scaleDownX = ObjectAnimator.ofFloat(view, "scaleX", 0.7f);
-        ObjectAnimator scaleDownY = ObjectAnimator.ofFloat(view, "scaleY", 0.7f);
-        scaleDownX.setDuration(1500);
-        scaleDownY.setDuration(1500);
-
-        ObjectAnimator moveUpY = ObjectAnimator.ofFloat(view, "translationY", -100);
-        moveUpY.setDuration(1500);
-
-        AnimatorSet scaleDown = new AnimatorSet();
-        AnimatorSet moveUp = new AnimatorSet();
-
-        scaleDown.play(scaleDownX).with(scaleDownY);
-        moveUp.play(moveUpY);
-
-        scaleDown.start();
-        moveUp.start();
-    }
 
     private void firePhotoEditorSDKListener(View view, boolean isStart) {
         Object viewTag = view.getTag();
