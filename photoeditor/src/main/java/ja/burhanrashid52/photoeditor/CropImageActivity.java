@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_BITMAP;
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_IMAGE;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_OUTPUT_PATH;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_PATH;
@@ -68,10 +69,12 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
     }
 
     public String savebitmap(Bitmap bitmapImage) {
-        Uri destination = Uri.fromFile(new File(outputPath));
+        Uri destination = Uri.fromFile(new File(getCacheDir(), "cropped"));
+        CropUtil.saveOutput(CropImageActivity.this, destination, bitmapImage, 90);
+//        Uri destination = Uri.fromFile(new File(outputPath));
        boolean isSave =  CropUtil.saveOutput(CropImageActivity.this, destination, bitmapImage, 90);
        if(isSave)
-           return outputPath;
+           return destination.getPath();
        return path;
 
     }
@@ -123,10 +126,14 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
                 resultIv.setImageBitmap(croppedBitmap);
             }
         });
-        String destination = savebitmap(croppedBitmap);
+        String destination = saveImage(croppedBitmap);
+        ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+        croppedBitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream);
+        byte[] byteArray = bStream.toByteArray();
 //        String destination = saveImage(croppedBitmap);
         Intent intent = new Intent();
         intent.putExtra(EXTRA_CROP_IMAGE, destination);
+        intent.putExtra(EXTRA_CROP_BITMAP, byteArray);
         setResult(RESULT_OK, intent);
         finish();
     }
