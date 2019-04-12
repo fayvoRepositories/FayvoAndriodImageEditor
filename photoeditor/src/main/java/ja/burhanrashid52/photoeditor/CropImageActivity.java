@@ -133,12 +133,13 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
              destination = saveImage(croppedBitmap);
         }
         try {
-            byte[] byteArray = getBitmapBytes(croppedBitmap);
+            ParcelableBitmap parcelableLaptop = new ParcelableBitmap(new BitmapLoader(croppedBitmap));
+//            byte[] byteArray = getBitmapBytes(croppedBitmap);
             Intent intent = new Intent();
             if(!destination.equalsIgnoreCase("")) {
                 intent.putExtra(EXTRA_CROP_IMAGE, destination);
             }
-            intent.putExtra(EXTRA_CROP_BITMAP, byteArray);
+            intent.putExtra(EXTRA_CROP_BITMAP, parcelableLaptop);
             setResult(RESULT_OK, intent);
             finish();
         }catch (Exception e){
