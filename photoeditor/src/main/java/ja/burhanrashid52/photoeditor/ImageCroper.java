@@ -58,13 +58,13 @@ public class ImageCroper {
         public CropBuilder(String path, Activity activity) {
             this.activity = activity;
             this.path = path;
-            this.outputPath = path;
+            this.outputPath = "";
         }
 
        public CropBuilder(String path, Fragment fragment) {
             this.fragment = fragment;
             this.path = path;
-           this.outputPath = path;
+           this.outputPath = "";
         }
 
         public ImageCroper start() {
