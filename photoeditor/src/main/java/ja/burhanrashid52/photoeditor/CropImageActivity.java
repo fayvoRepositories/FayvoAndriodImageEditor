@@ -70,8 +70,15 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         File file = new File(path);
         FileOutputStream fos = null;
         try {
+            file.createNewFile();
             fos = new FileOutputStream(file);
-            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+            String extension = path.substring(path.lastIndexOf("."));
+            if(extension.equalsIgnoreCase(".png")){
+                bitmapImage.compress(Bitmap.CompressFormat.PNG, 90, fos);
+            }else{
+                bitmapImage.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
