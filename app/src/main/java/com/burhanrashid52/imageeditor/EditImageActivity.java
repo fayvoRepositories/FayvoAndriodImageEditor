@@ -384,8 +384,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 break;
 
             case R.id.imgCamera:
-//                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                Intent cameraIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+//                Intent cameraIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);
                 break;
 
