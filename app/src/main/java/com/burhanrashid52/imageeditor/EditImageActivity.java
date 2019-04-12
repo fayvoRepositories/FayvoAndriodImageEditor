@@ -358,7 +358,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         switch (view.getId()) {
 
             case R.id.icCrop:
-                new ImageCroper.CropBuilder(imagePath, this).start();
+                new ImageCroper.CropBuilder(imagePath,imagePath, this).start();
                 break;
             case R.id.done:
                 slideDown(brushLayout);

@@ -19,6 +19,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_IMAGE;
+import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_OUTPUT_PATH;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_PATH;
 
 public class CropImageActivity extends AppCompatActivity implements View.OnClickListener, CropImageView.OnCropImageCompleteListener,  CropImageView.OnSetImageUriCompleteListener{
@@ -26,6 +27,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
     private CropImageView mCropImageView;
     private ImageView resultIv;
     String path;
+    String outputPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +42,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         doneBtn.setOnClickListener(this);
         cancelBtn.setOnClickListener(this);
         path = getIntent().getExtras().getString(IMAGE_PATH);
+        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
         Uri source = Uri.fromFile(new File(path));
         mCropImageView.setImageUriAsync(source);
         mCropImageView.setVisibility(View.VISIBLE);
@@ -63,9 +66,9 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         setResult(RESULT_CANCELED);
     }
 
-    private String saveImage(Bitmap bitmap, String path) {
-        String extension = path.substring(path.lastIndexOf("."));
-        File file = new File(path.replace(extension, "_croped"+extension));
+    private String saveImage(Bitmap bitmap) {
+//        String extension = path.substring(path.lastIndexOf("."));
+        File file = new File(outputPath);
         String fileName = file.getPath();
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -111,9 +114,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
                 resultIv.setImageBitmap(croppedBitmap);
             }
         });
-        String destination = saveImage(croppedBitmap,
-                ImagePath.getPath(CropImageActivity.this,
-                        Uri.fromFile(new File(path))));
+        String destination = saveImage(croppedBitmap);
         Intent intent = new Intent();
         intent.putExtra(EXTRA_CROP_IMAGE, destination);
         setResult(RESULT_OK, intent);
