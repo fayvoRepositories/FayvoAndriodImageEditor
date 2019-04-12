@@ -71,8 +71,8 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         Uri destination = Uri.fromFile(new File(outputPath));
        boolean isSave =  CropUtil.saveOutput(CropImageActivity.this, destination, bitmapImage, 90);
        if(isSave)
-           return path;
-       return outputPath;
+           return outputPath;
+       return path;
 
     }
     private String saveImage(Bitmap bitmap) {
