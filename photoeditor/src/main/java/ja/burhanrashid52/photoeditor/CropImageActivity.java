@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.oginotihiro.cropview.CropUtil;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.ByteArrayOutputStream;
@@ -66,29 +67,13 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         setResult(RESULT_CANCELED);
     }
 
-    public static String savebitmap(Bitmap bitmapImage, String path) {
-        File file = new File(path);
-        FileOutputStream fos = null;
-        try {
-            file.createNewFile();
-            fos = new FileOutputStream(file);
-            String extension = path.substring(path.lastIndexOf("."));
-            if(extension.equalsIgnoreCase(".png")){
-                bitmapImage.compress(Bitmap.CompressFormat.PNG, 90, fos);
-            }else{
-                bitmapImage.compress(Bitmap.CompressFormat.JPEG, 90, fos);
-            }
+    public String savebitmap(Bitmap bitmapImage) {
+        Uri destination = Uri.fromFile(new File(outputPath));
+       boolean isSave =  CropUtil.saveOutput(CropImageActivity.this, destination, bitmapImage, 90);
+       if(isSave)
+           return path;
+       return outputPath;
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return file.getAbsolutePath();
     }
     private String saveImage(Bitmap bitmap) {
 //        String extension = path.substring(path.lastIndexOf("."));
@@ -138,7 +123,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
                 resultIv.setImageBitmap(croppedBitmap);
             }
         });
-        String destination = savebitmap(croppedBitmap, outputPath);
+        String destination = savebitmap(croppedBitmap);
 //        String destination = saveImage(croppedBitmap);
         Intent intent = new Intent();
         intent.putExtra(EXTRA_CROP_IMAGE, destination);
