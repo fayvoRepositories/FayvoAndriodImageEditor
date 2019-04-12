@@ -66,6 +66,23 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         setResult(RESULT_CANCELED);
     }
 
+    public static String savebitmap(Bitmap bitmapImage, String path) {
+        File file = new File(path);
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file);
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return file.getAbsolutePath();
+    }
     private String saveImage(Bitmap bitmap) {
 //        String extension = path.substring(path.lastIndexOf("."));
         File file = new File(outputPath);
@@ -114,7 +131,8 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
                 resultIv.setImageBitmap(croppedBitmap);
             }
         });
-        String destination = saveImage(croppedBitmap);
+        String destination = savebitmap(croppedBitmap, outputPath);
+//        String destination = saveImage(croppedBitmap);
         Intent intent = new Intent();
         intent.putExtra(EXTRA_CROP_IMAGE, destination);
         setResult(RESULT_OK, intent);
