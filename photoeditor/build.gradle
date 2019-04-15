@@ -64,6 +64,7 @@ dependencies {
     implementation "com.andkulikov:transitionseverywhere:1.8.1"
 //    implementation "com.andkulikov:transitionseverywhere:2.0.0-alpha02"
     implementation 'com.oginotihiro:cropview:1.0.0'
+    implementation 'eu.inloop:localmessagemanager:0.1.7'
     androidTestImplementation 'junit:junit:4.12'
 }
 

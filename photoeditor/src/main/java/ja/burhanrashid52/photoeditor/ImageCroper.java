@@ -8,7 +8,7 @@ public class ImageCroper {
 
     public static final int CROP_IMAGE_RESULT = 100;
     public static final String EXTRA_CROP_IMAGE = "image_croper_image";
-    public static final String EXTRA_CROP_BITMAP = "image_croper_bitmap";
+    public static final int EXTRA_CROP_BITMAP = 101;
     public static final String IMAGE_PATH = "image_croper_path";
     public static final String IMAGE_OUTPUT_PATH = "image_crop_path";
 

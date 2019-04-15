@@ -50,6 +50,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import eu.inloop.localmessagemanager.LocalMessage;
+import eu.inloop.localmessagemanager.LocalMessageCallback;
+import eu.inloop.localmessagemanager.LocalMessageManager;
 import ja.burhanrashid52.photoeditor.DragDropOnDragListener;
 import ja.burhanrashid52.photoeditor.ImageCroper;
 import ja.burhanrashid52.photoeditor.ImagePath;
@@ -63,6 +66,7 @@ import ja.burhanrashid52.photoeditor.ViewType;
 import ja.burhanrashid52.photoeditor.PhotoFilter;
 
 import static ja.burhanrashid52.photoeditor.ImageCroper.CROP_IMAGE_RESULT;
+import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_BITMAP;
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_IMAGE;
 
 public class EditImageActivity extends BaseActivity implements OnPhotoEditorListener,
@@ -358,6 +362,19 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         switch (view.getId()) {
 
             case R.id.icCrop:
+                LocalMessageManager.getInstance().addListener(new LocalMessageCallback() {
+                    @Override
+                    public void handleMessage(@NonNull LocalMessage localMessage) {
+                        if(localMessage.getId() == EXTRA_CROP_BITMAP){
+                            if(localMessage.getObject() != null){
+                                Bitmap bitmap = (Bitmap) localMessage.getObject();
+                                mPhotoEditor.clearAllViews();
+                                mPhotoEditorView.setImageBitmap(bitmap);
+                            }
+                        }
+                        LocalMessageManager.getInstance().removeListener(this);
+                    }
+                });
                 new ImageCroper.CropBuilder(imagePath,imagePath, this).start();
                 break;
             case R.id.done:
@@ -390,17 +407,17 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 break;
 
             case R.id.imgGallery:
-                /*Intent intent = new Intent();
+                Intent intent = new Intent();
                 intent.setType("image/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_REQUEST);*/
-                new MaterialFilePicker()
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_REQUEST);
+                /*new MaterialFilePicker()
                         .withActivity(this)
                         .withRequestCode(PICK_REQUEST)
 //                        .withFilter(Pattern.compile(".*\\.mp4$")) // Filtering files and directories by file name using regexp
                         .withFilterDirectories(true) // Set directories filterable (false by default)
                         .withHiddenFiles(true) // Show hidden files and folders
-                        .start();
+                        .start();*/
                 break;
             case R.id.ivBrush:
                 mPhotoEditor.setBrushDrawingMode(true);
@@ -529,7 +546,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                         Uri uri = data.getData();
                         imagePath = ImagePath.getPath(this, uri);
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                        mPhotoEditorView.setImageBitmap(bitmap);
+                        mPhotoEditorView.getSource().setImageBitmap(bitmap);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

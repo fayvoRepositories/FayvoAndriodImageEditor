@@ -19,14 +19,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+
+import eu.inloop.localmessagemanager.LocalMessageManager;
 
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_BITMAP;
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_IMAGE;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_OUTPUT_PATH;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_PATH;
 
-public class CropImageActivity extends AppCompatActivity implements View.OnClickListener, CropImageView.OnCropImageCompleteListener,  CropImageView.OnSetImageUriCompleteListener{
+public class CropImageActivity extends AppCompatActivity implements View.OnClickListener, CropImageView.OnCropImageCompleteListener, CropImageView.OnSetImageUriCompleteListener {
 
     private CropImageView mCropImageView;
     private ImageView resultIv;
@@ -47,7 +48,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         cancelBtn.setOnClickListener(this);
         path = getIntent().getExtras().getString(IMAGE_PATH);
         outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
-        Uri source = Uri.fromFile(new File(path));
+        Uri source = Uri.parse((path));
         mCropImageView.setImageUriAsync(source);
         mCropImageView.setVisibility(View.VISIBLE);
         btnlay.setVisibility(View.VISIBLE);
@@ -74,12 +75,13 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         Uri destination = Uri.fromFile(new File(getCacheDir(), "cropped"));
         CropUtil.saveOutput(CropImageActivity.this, destination, bitmapImage, 90);
 //        Uri destination = Uri.fromFile(new File(outputPath));
-       boolean isSave =  CropUtil.saveOutput(CropImageActivity.this, destination, bitmapImage, 90);
-       if(isSave)
-           return destination.getPath();
-       return path;
+        boolean isSave = CropUtil.saveOutput(CropImageActivity.this, destination, bitmapImage, 90);
+        if (isSave)
+            return destination.getPath();
+        return path;
 
     }
+
     private String saveImage(Bitmap bitmap) {
 //        String extension = path.substring(path.lastIndexOf("."));
         File file = new File(outputPath);
@@ -120,7 +122,6 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onCropImageComplete(CropImageView view, CropImageView.CropResult result) {
-
         final Bitmap croppedBitmap = result.getBitmap();
         runOnUiThread(new Runnable() {
             @Override
@@ -128,68 +129,21 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
                 resultIv.setImageBitmap(croppedBitmap);
             }
         });
-        String destination = "";
-        if(!outputPath.equalsIgnoreCase("")) {
-             destination = saveImage(croppedBitmap);
-        }
+        /*String destination = "";
+        if (!outputPath.equalsIgnoreCase("")) {
+            destination = saveImage(croppedBitmap);
+        }*/
         try {
-            ParcelableBitmap parcelableLaptop = new ParcelableBitmap(new BitmapLoader(croppedBitmap));
-//            byte[] byteArray = getBitmapBytes(croppedBitmap);
-            Intent intent = new Intent();
-            if(!destination.equalsIgnoreCase("")) {
-                intent.putExtra(EXTRA_CROP_IMAGE, destination);
-            }
-            intent.putExtra(EXTRA_CROP_BITMAP, parcelableLaptop);
-            setResult(RESULT_OK, intent);
+//            Intent intent = new Intent();
+//            intent.putExtra(EXTRA_CROP_IMAGE, destination);
+//            setResult(RESULT_OK, intent);
+            LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
             finish();
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.d("Exception", e.getStackTrace().toString());
             setResult(RESULT_CANCELED);
             finish();
         }
     }
 
-    private byte[] getBitmapBytes(Bitmap bitmap)
-    {
-        int chunkNumbers = 10;
-        int bitmapSize = bitmap.getRowBytes() * bitmap.getHeight();
-        byte[] imageBytes = new byte[bitmapSize];
-        int rows, cols;
-        int chunkHeight, chunkWidth;
-        rows = cols = (int) Math.sqrt(chunkNumbers);
-        chunkHeight = bitmap.getHeight() / rows;
-        chunkWidth = bitmap.getWidth() / cols;
-
-        int yCoord = 0;
-        int bitmapsSizes = 0;
-
-        for (int x = 0; x < rows; x++)
-        {
-            int xCoord = 0;
-            for (int y = 0; y < cols; y++)
-            {
-                Bitmap bitmapChunk = Bitmap.createBitmap(bitmap, xCoord, yCoord, chunkWidth, chunkHeight);
-                byte[] bitmapArray = getBytesFromBitmapChunk(bitmapChunk);
-                System.arraycopy(bitmapArray, 0, imageBytes, bitmapsSizes, bitmapArray.length);
-                bitmapsSizes = bitmapsSizes + bitmapArray.length;
-                xCoord += chunkWidth;
-
-                bitmapChunk.recycle();
-                bitmapChunk = null;
-            }
-            yCoord += chunkHeight;
-        }
-
-        return imageBytes;
-    }
-
-
-    private byte[] getBytesFromBitmapChunk(Bitmap bitmap)
-    {
-        int bitmapSize = bitmap.getRowBytes() * bitmap.getHeight();
-        ByteBuffer byteBuffer = ByteBuffer.allocate(bitmapSize);
-        bitmap.copyPixelsToBuffer(byteBuffer);
-        byteBuffer.rewind();
-        return byteBuffer.array();
-    }
 }
