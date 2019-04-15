@@ -26,13 +26,13 @@ public class ImageCroper {
         if (fragment != null) {
             Intent intent = new Intent(fragment.getActivity(),CropImageActivity.class);
             intent.putExtra(IMAGE_PATH, path);
-            intent.putExtra(IMAGE_OUTPUT_PATH, outputPath);
+//            intent.putExtra(IMAGE_OUTPUT_PATH, outputPath);
             fragment.startActivityForResult(intent, CROP_IMAGE_RESULT);
         }
         if(activity != null){
             Intent intent = new Intent(activity, CropImageActivity.class);
             intent.putExtra(IMAGE_PATH, path);
-            intent.putExtra(IMAGE_OUTPUT_PATH, outputPath);
+//            intent.putExtra(IMAGE_OUTPUT_PATH, outputPath);
             activity.startActivityForResult(intent, CROP_IMAGE_RESULT);
         }
     }

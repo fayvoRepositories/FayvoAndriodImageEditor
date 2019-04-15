@@ -3,6 +3,7 @@ package ja.burhanrashid52.photoeditor;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -32,7 +33,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
     private CropImageView mCropImageView;
     private ImageView resultIv;
     String path;
-    String outputPath;
+//    String outputPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,9 +48,10 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         doneBtn.setOnClickListener(this);
         cancelBtn.setOnClickListener(this);
         path = getIntent().getExtras().getString(IMAGE_PATH);
-        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
-        Uri source = Uri.parse((path));
-        mCropImageView.setImageUriAsync(source);
+//        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
+//        Uri source = Uri.fromFile((new File(path)));
+        Bitmap myBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath());
+        mCropImageView.setImageBitmap(myBitmap);
         mCropImageView.setVisibility(View.VISIBLE);
         btnlay.setVisibility(View.VISIBLE);
     }
@@ -84,7 +86,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 
     private String saveImage(Bitmap bitmap) {
 //        String extension = path.substring(path.lastIndexOf("."));
-        File file = new File(outputPath);
+        File file = new File(path);
         String fileName = file.getAbsolutePath();
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
