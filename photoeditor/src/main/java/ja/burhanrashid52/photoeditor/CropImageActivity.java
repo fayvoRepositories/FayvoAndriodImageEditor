@@ -62,10 +62,30 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         path = getIntent().getExtras().getString(IMAGE_PATH);
 //        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
 //        Uri source = Uri.fromFile((new File(path)));
-        Bitmap myBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath());
-        mCropImageView.setImageBitmap(myBitmap);
+
+
+        ;
+        BitmapFactory.Options oldOptions = new BitmapFactory.Options();
+        oldOptions.inJustDecodeBounds = true;
+        Bitmap tempBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), oldOptions);
+        Bitmap bitmap;
+        if(isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight)){
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 8;
+            options.inPreferredConfig = Bitmap.Config.ARGB_4444;
+            options.outWidth = oldOptions.outWidth/8;
+            bitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), options);
+        }else{
+            bitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath());
+        }
+
+        mCropImageView.setImageBitmap(bitmap);
         mCropImageView.setVisibility(View.VISIBLE);
         btnlay.setVisibility(View.VISIBLE);
+    }
+
+    public static boolean isPanoramicImage(int width, int height) {
+        return width > 0 && height > 0 && ((height / width > 4) || (width / height >= 4));
     }
 
     private boolean isRotateShow() {

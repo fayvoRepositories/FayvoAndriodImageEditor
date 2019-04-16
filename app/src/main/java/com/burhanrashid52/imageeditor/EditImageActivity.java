@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -541,15 +542,25 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     mPhotoEditorView.setImageBitmap(photo);
                     break;
                 case PICK_REQUEST:
-                    try {
-                        mPhotoEditor.clearAllViews();
-                        Uri uri = data.getData();
-                        imagePath = ImagePath.getPath(this, uri);
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                        mPhotoEditorView.getSource().setImageBitmap(bitmap);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    mPhotoEditor.clearAllViews();
+                    Uri uri = data.getData();
+                    imagePath = ImagePath.getPath(this, uri);
+                    Bitmap tempBitmap;
+                    BitmapFactory.Options oldOptions = new BitmapFactory.Options();
+                    oldOptions.inJustDecodeBounds = true;
+                    tempBitmap = BitmapFactory.decodeFile(new File(imagePath).getAbsolutePath(), oldOptions);
+                    Bitmap bitmap;
+                    if(isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight)){
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inSampleSize = 8;
+                        options.inPreferredConfig = Bitmap.Config.ARGB_4444;
+                        options.outWidth = oldOptions.outWidth/8;
+                        bitmap = BitmapFactory.decodeFile(new File(imagePath).getAbsolutePath(), options);
+                    }else{
+                        bitmap = BitmapFactory.decodeFile(new File(imagePath).getAbsolutePath());
                     }
+//                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                    mPhotoEditorView.getSource().setImageBitmap(bitmap);
 
                     /*videoPath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
                     Drawable myDrawable = getResources().getDrawable(R.drawable.transparent);
@@ -574,6 +585,12 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
 
     }
+
+
+    public boolean isPanoramicImage(int width, int height) {
+        return width > 0 && height > 0 && ((height / width > 4) || (width / height >= 4));
+    }
+
 
     @Override
     public void onColorChanged(int colorCode) {
