@@ -375,7 +375,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                         LocalMessageManager.getInstance().removeListener(this);
                     }
                 });
-                new ImageCroper.CropBuilder(imagePath, this).start();
+                new ImageCroper.CropBuilder(imagePath, this).setRotateShow(false).start();
                 break;
             case R.id.done:
                 slideDown(brushLayout);

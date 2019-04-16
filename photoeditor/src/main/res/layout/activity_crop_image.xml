@@ -6,13 +6,45 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#000000">
 
+    <ImageView
+        android:id="@+id/btnRotateLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        app:srcCompat="@drawable/crop_image_menu_rotate_left" />
+
+    <ImageView
+        android:id="@+id/btnRotateRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        app:srcCompat="@drawable/crop_image_menu_rotate_right" />
+
     <com.theartofdev.edmodo.cropper.CropImageView
         android:id="@+id/cropView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:cropShowProgressBar="false"
         android:layout_above="@+id/btnlay"
-        android:visibility="visible"/>
+        android:visibility="visible">
+
+    </com.theartofdev.edmodo.cropper.CropImageView>
   <!--  <com.oginotihiro.cropview.CropView
         android:id="@+id/cropView"
         android:layout_width="match_parent"

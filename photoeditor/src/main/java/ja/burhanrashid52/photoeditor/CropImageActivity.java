@@ -24,14 +24,16 @@ import java.io.IOException;
 import eu.inloop.localmessagemanager.LocalMessageManager;
 
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_BITMAP;
-import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_IMAGE;
-import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_OUTPUT_PATH;
+
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_PATH;
+import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_SHOW;
 
 public class CropImageActivity extends AppCompatActivity implements View.OnClickListener, CropImageView.OnCropImageCompleteListener, CropImageView.OnSetImageUriCompleteListener {
 
     private CropImageView mCropImageView;
     private ImageView resultIv;
+    private ImageView btnRotateLeft;
+    private ImageView btnRotateRight;
     String path;
 //    String outputPath;
 
@@ -41,12 +43,22 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         setContentView(R.layout.activity_crop_image);
         mCropImageView = findViewById(R.id.cropView);
         resultIv = findViewById(R.id.resultIv);
+
+        btnRotateLeft = findViewById(R.id.btnRotateLeft);
+        btnRotateRight = findViewById(R.id.btnRotateRight);
+        btnRotateLeft.setVisibility(isRotateShow() ? View.VISIBLE : View.GONE);
+        btnRotateRight.setVisibility(isRotateShow() ? View.VISIBLE : View.GONE);
+
+        btnRotateRight.bringToFront();
+        btnRotateLeft.bringToFront();
         LinearLayout btnlay = findViewById(R.id.btnlay);
         Button doneBtn = findViewById(R.id.doneBtn);
         Button cancelBtn = findViewById(R.id.cancelBtn);
 
         doneBtn.setOnClickListener(this);
         cancelBtn.setOnClickListener(this);
+        btnRotateLeft.setOnClickListener(this);
+        btnRotateRight.setOnClickListener(this);
         path = getIntent().getExtras().getString(IMAGE_PATH);
 //        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
 //        Uri source = Uri.fromFile((new File(path)));
@@ -56,6 +68,13 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         btnlay.setVisibility(View.VISIBLE);
     }
 
+    private boolean isRotateShow() {
+        if (getIntent().getExtras() != null) {
+            return getIntent().getExtras().getBoolean(IMAGE_ROTATE_SHOW, true);
+        }
+        return true;
+    }
+
     @Override
     public void onClick(View v) {
         int id = v.getId();
@@ -63,7 +82,10 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
             mCropImageView.getCroppedImageAsync();
         } else if (id == R.id.cancelBtn) {
             onBackPressed();
-
+        } else if (id == R.id.btnRotateLeft) {
+            mCropImageView.rotateImage(-90);
+        } else if (id == R.id.btnRotateRight) {
+            mCropImageView.rotateImage(90);
         }
     }
 
