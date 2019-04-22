@@ -1,1125 +1,980 @@
-package ja.burhanrashid52.photoeditor;
+package com.fayvo.ui.main.camera.postpreview.mediapager.fragment;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ClipData;
-import android.content.ClipDescription;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Typeface;
-import android.os.AsyncTask;
+import android.graphics.Color;
+import android.graphics.Point;
+import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.ColorInt;
-import android.support.annotation.IntRange;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresPermission;
-import android.support.annotation.UiThread;
+import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
+import android.view.ViewTreeObserver;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
-import java.io.ByteArrayOutputStream;
+import com.bumptech.glide.Glide;
+import com.fayvo.BR;
+import com.fayvo.R;
+import com.fayvo.data.model.api.ApiError;
+import com.fayvo.data.model.others.GalleryMedia;
+import com.fayvo.databinding.ActivityPostPreviewBinding;
+import com.fayvo.databinding.FragmentMediaPreviewBinding;
+import com.fayvo.ui.base.BaseFragment;
+import com.fayvo.ui.main.camera.postpreview.PostPreviewActivity;
+import com.fayvo.ui.main.camera.postpreview.mediapager.fragment.burshEditor.PropertiesBSFragment;
+import com.fayvo.ui.main.camera.postpreview.mediapager.fragment.saveImage.ImageSave;
+import com.fayvo.ui.main.camera.postpreview.mediapager.fragment.stickerEditor.StickerBSFragment;
+import com.fayvo.ui.main.camera.postpreview.mediapager.fragment.textEditor.TextEditorActivity;
+import com.fayvo.utils.AppLogger;
+import com.fayvo.utils.BitmapUtil;
+import com.fayvo.utils.CommonUtils;
+import com.fayvo.utils.MediaLoader;
+import com.fayvo.utils.MessageAlert;
+import com.fayvo.utils.PathUtil;
+import com.fayvo.utils.RequestCodes;
+import com.fayvo.utils.enums.PostEditing;
+import com.fayvo.utils.gesture.OnSwipeTouchListener;
+import com.fayvo.utils.interfaces.TaskListener;
+import com.fayvo.utils.tags.CommonTags;
+import com.fayvo.utils.tags.PostEditingTags;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-/**
- * <p>
- * This class in initialize by {@link PhotoEditor.Builder} using a builder pattern with multiple
- * editing attributes
- * </p>
- *
- * @author <a href="https://github.com/burhanrashid52">Burhanuddin Rashid</a>
- * @version 0.1.1
- * @since 18/01/2017
- */
-public class PhotoEditor implements BrushViewChangeListener {
+import javax.inject.Inject;
 
-    private static final String TAG = "PhotoEditor";
-    private final LayoutInflater mLayoutInflater;
-    private Context context;
-    private PhotoEditorView parentView;
-    private ImageView imageView;
-    private View deleteView;
-    private BrushDrawingView brushDrawingView;
-    private List<View> addedViews;
-    private List<View> redoViews;
-    private OnPhotoEditorListener mOnPhotoEditorListener;
-    private MultiTouchListener.DragDeleteListener dragDeleteListener;
-    private boolean isTextPinchZoomable;
-    private Typeface mDefaultTextTypeface;
-    private Typeface mDefaultEmojiTypeface;
-    private boolean isBurshEnable = false;
+import eu.inloop.localmessagemanager.LocalMessage;
+import eu.inloop.localmessagemanager.LocalMessageCallback;
+import eu.inloop.localmessagemanager.LocalMessageManager;
+import ja.burhanrashid52.photoeditor.ImageCroper;
+import ja.burhanrashid52.photoeditor.MultiTouchListener;
+import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
+import ja.burhanrashid52.photoeditor.OnSaveBitmap;
+import ja.burhanrashid52.photoeditor.PhotoEditor;
+import ja.burhanrashid52.photoeditor.PhotoEditorView;
+import ja.burhanrashid52.photoeditor.PhotoFilter;
+import ja.burhanrashid52.photoeditor.SaveSettings;
+import ja.burhanrashid52.photoeditor.ViewType;
 
+import static android.app.Activity.RESULT_OK;
+import static com.fayvo.utils.BitmapUtil.applyOverlayOnImage;
+import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_BITMAP;
 
-    private PhotoEditor(Builder builder) {
-        this.context = builder.context;
-        this.parentView = builder.parentView;
-        this.imageView = builder.imageView;
-        this.deleteView = builder.deleteView;
-        this.brushDrawingView = builder.brushDrawingView;
-        this.isTextPinchZoomable = builder.isTextPinchZoomable;
-        this.mDefaultTextTypeface = builder.textTypeface;
-        this.mDefaultEmojiTypeface = builder.emojiTypeface;
-        this.dragDeleteListener = builder.dragDeleteListener;
-        mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        brushDrawingView.setBrushViewChangeListener(this);
-        addedViews = new ArrayList<>();
-        redoViews = new ArrayList<>();
+public class MediaPreviewFragment extends BaseFragment<FragmentMediaPreviewBinding, MediaPreviewViewModel>
+        implements MediaPreviewFragmentNavigator, OnPhotoEditorListener,
+        PropertiesBSFragment.Properties, StickerBSFragment.StickerListener,
+        MultiTouchListener.DragDeleteListener {
+
+    public final String TAG = MediaPreviewFragment.class.getSimpleName();
+    public FragmentMediaPreviewBinding mFragmentMediaPreviewBinding;
+    public boolean isStickerShow = false;
+    public boolean isTextEditorShow = false;
+    @Inject
+    MediaPreviewViewModel mMediaPreviewViewModel;
+
+    private GalleryMedia galleryMedia;
+    private PhotoEditor photoEditor;
+    private StickerBSFragment stickerBSFragment;
+    private List<PhotoFilter> filters = new ArrayList<>();
+    private LinearLayout delete;
+    private ProgressDialog mProgressDialog;
+
+    private Bitmap transparentBitmap;
+    private View textRootView;
+    private boolean isVideoPrepared;
+
+    public static MediaPreviewFragment newInstance(GalleryMedia galleryMedia) {
+        Bundle args = new Bundle();
+        MediaPreviewFragment fragment = new MediaPreviewFragment();
+        args.putParcelable(CommonTags.MODEL, galleryMedia);
+        fragment.setArguments(args);
+        return fragment;
     }
 
-
-    public void setPhotoEditorView(PhotoEditorView parentView){
-        this.parentView = parentView;
-    }
-
-    public void addAllView(PhotoEditorView photoEditorView){
-        for (int i = 0; i < addedViews.size(); i++) {
-            if(addedViews.get(i).getParent() != null) {
-                ((ViewGroup)addedViews.get(i).getParent()).removeView(addedViews.get(i)); // <- fix
-            }
-            if(photoEditorView != null) {
-                if(addedViews.get(i) != null) {
-                    photoEditorView.addView(addedViews.get(i));
-                }
-            }
+    private static void refreshGallery(String mCurrentPhotoPath, Context context) {
+        if (context != null) {
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            File f = new File(mCurrentPhotoPath);
+            Uri contentUri = Uri.fromFile(f);
+            mediaScanIntent.setData(contentUri);
+            context.sendBroadcast(mediaScanIntent);
         }
     }
 
-    public PhotoEditorView getPhotoEditorView(){
-        return parentView;
+    @Override
+    public int getBindingVariable() {
+        return BR.viewModel;
     }
-    /**
-     * This will add image on {@link PhotoEditorView} which you drag,rotate and scale using pinch
-     * if {@link PhotoEditor.Builder#setPinchTextScalable(boolean)} enabled
-     *
-     * @param desiredImage bitmap image you want to add
-     */
-    public void addImage(Bitmap desiredImage, final LinearLayout delete) {
-        final View imageRootView = getLayout(ViewType.IMAGE);
-        final ImageView imageView = imageRootView.findViewById(R.id.imgPhotoEditorImage);
-        final FrameLayout frmBorder = imageRootView.findViewById(R.id.frmBorder);
-        final ImageView imgClose = imageRootView.findViewById(R.id.imgPhotoEditorClose);
 
-        imgClose.setVisibility(View.GONE);
-        frmBorder.setBackgroundResource(0);
-        imageView.setImageBitmap(desiredImage);
+    @Override
+    public int getLayoutId() {
+        return R.layout.fragment_media_preview;
+    }
 
-        MultiTouchListener multiTouchListener = getMultiTouchListener();
-        multiTouchListener.setOnGestureControl(new MultiTouchListener.OnGestureControl() {
+    @Override
+    public MediaPreviewViewModel getViewModel() {
+        return mMediaPreviewViewModel;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mMediaPreviewViewModel.setNavigator(this);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mFragmentMediaPreviewBinding = getViewDataBinding();
+        if (getActivity() instanceof PostPreviewActivity) {
+            delete = ((PostPreviewActivity) Objects.requireNonNull(getActivity())).getDeleteLayout();
+        }
+
+        if (getArguments() != null && getArguments().containsKey(CommonTags.MODEL))
+            galleryMedia = getArguments().getParcelable(CommonTags.MODEL);
+
+        if (galleryMedia != null) {
+            mMediaPreviewViewModel.setGalleryMedia(galleryMedia);
+            if (!galleryMedia.isVideo()) {
+                mFragmentMediaPreviewBinding.videoView.setVisibility(View.GONE);
+                mFragmentMediaPreviewBinding.videoProgressBar.setVisibility(View.GONE);
+            }
+            String mediaPath = galleryMedia.isVideo() || galleryMedia.getCroppedImage() == null ? galleryMedia.getPath() : galleryMedia.getCroppedImage();
+            MediaLoader.loadMediaDrawableNoThumbnailWithCallbacks(mFragmentMediaPreviewBinding.ivThumbnail, mediaPath, new TaskListener<Drawable>() {
+                @Override
+                public void onResponse(Drawable response) {
+                    if (!galleryMedia.isVideo()) {
+                        mFragmentMediaPreviewBinding.ivThumbnail.setImageDrawable(response);
+                        //Bitmap bitmap = ((BitmapDrawable) response).getBitmap();
+                    } else {
+                        mFragmentMediaPreviewBinding.viewEditorHolder.setVisibility(View.VISIBLE);
+                    }
+
+                    AppLogger.d("usm_media_preview", "MediaLoader: onResponse: path= " + galleryMedia.getPath());
+                    //mFragmentMediaPreviewBinding.ivThumbnail.setImageDrawable(response);
+                    setViewObserverForAnim(mFragmentMediaPreviewBinding.ivThumbnail);
+                }
+
+                @Override
+                public void onError(ApiError apiError) {
+                    AppLogger.d("usm_media_preview", "MediaLoader: onError: path= " + galleryMedia.getPath());
+
+                    //startPostponedEnterTransition();
+                    try {
+                        if (getBaseActivity() instanceof PostPreviewActivity && ((PostPreviewActivity) getBaseActivity()).isTransitionPending()) {
+                            ((PostPreviewActivity) getBaseActivity()).isTransitionPlayed = true;
+                            ActivityCompat.startPostponedEnterTransition(getBaseActivity());
+                        }
+                    } catch (Exception ignore) {
+                    }
+
+                    if (galleryMedia.isVideo()) {
+                        mFragmentMediaPreviewBinding.viewEditorHolder.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
+
+            setTransparentOverlay();
+            setOverlayEditor();
+
+        }
+    }
+
+    private void setOverlayEditor() {
+
+        if(photoEditor == null) {
+            photoEditor = new PhotoEditor.Builder(getActivity(),
+                    (PhotoEditorView) mFragmentMediaPreviewBinding.viewEditorHolder.getChildAt(0))
+                    .setPinchTextScalable(true) // set flag to make text scalable when pinch
+                    .setdragDeleteListener(this)
+                    .setDeleteView(delete)
+                    .build();
+
+        }else{
+            photoEditor.addAllView((PhotoEditorView) mFragmentMediaPreviewBinding.viewEditorHolder.getChildAt(0));
+        }
+        getPostPreviewActivity().addPhotoEditor(photoEditor);
+        photoEditor.setOnPhotoEditorListener(MediaPreviewFragment.this);
+        stickerBSFragment = new StickerBSFragment();
+        stickerBSFragment.setStickerListener(MediaPreviewFragment.this);
+//        if (delete != null) {
+//            delete.setOnDragListener(new DragDropOnDragListener(photoEditor));
+//        }
+        setupFilters();
+        setSwipeListener(photoEditor.getPhotoEditorView());
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void setSwipeListener(PhotoEditorView ivThumbnail) {
+        ivThumbnail.setOnTouchListener(new OnSwipeTouchListener(getActivity()) {
+
             @Override
-            public void onClick() {
-//                boolean isBackgroundVisible = frmBorder.getTag() != null && (boolean) frmBorder.getTag();
-//                frmBorder.setBackgroundResource(isBackgroundVisible ? 0 : R.drawable.rounded_border_tv);
-//                imgClose.setVisibility(isBackgroundVisible ? View.GONE : View.VISIBLE);
-//                frmBorder.setTag(!isBackgroundVisible);
+            public void onSwipeLeft() {
+                /*filterIndex--;
+                if (filterIndex < 0) {
+                    filterIndex = filters.size() - 1;
+                }
+                photoEditor.setFilterEffect(filters.get(filterIndex));*/
             }
 
             @Override
-            public void onLongClick() {
-                {
-                   /* delete.setVisibility(View.VISIBLE);
-                    // Create a new ClipData.Item from the View object's tag
-                    ClipData.Item item = new ClipData.Item((CharSequence) imageRootView.getTag().toString());
-
-                    // Create a new ClipData using the tag as a label, the plain text MIME type, and
-                    // the already-created item. This will create a new ClipDescription object within the
-                    // ClipData, and set its MIME type entry to "text/plain"
-                    String[] mimeTypes = {ClipDescription.MIMETYPE_TEXT_PLAIN};
-                    ClipData data = new ClipData(imageRootView.getTag().toString(), mimeTypes, item);
-
-                    // Instantiates the drag shadow builder.
-//                    View.DragShadowBuilder dragshadow = new View.DragShadowBuilder(imageRootView);
-                    View.DragShadowBuilder dragshadow = new DragShadowBuilder(imageView);
-
-                    // Starts the drag
-                    imageRootView.startDrag(data       // data to be dragged
-                            , dragshadow  // drag shadow
-                            , imageRootView            // local data about the drag and drop operation
-                            , 0          // flags set to 0 because not using currently
-                    );*/
+            public void onSwipeRight() {
+               /* filterIndex++;
+                if (filterIndex >= filters.size()) {
+                    filterIndex = 0;
                 }
+                photoEditor.setFilterEffect(filters.get(filterIndex));*/
+            }
+
+            @Override
+            public void onTouch() {
+                if (!photoEditor.isBurshEnable()) {
+                    showTextEditor(null);
+                }
+
             }
         });
-
-        imageRootView.setOnTouchListener(multiTouchListener);
-
-        addViewToParent(imageRootView, ViewType.IMAGE);
-
     }
 
-    /**
-     * This add the text on the {@link PhotoEditorView} with provided parameters
-     * by default {@link TextView#setText(int)} will be 18sp
-     *
-     * @param text              text to display
-     * @param colorCodeTextView text color to be displayed
-     */
-    @SuppressLint("ClickableViewAccessibility")
-    public void addText(String text, final int colorCodeTextView, View delete, int size) {
-        addText(null, text, colorCodeTextView, delete, size);
-    }
+    @Override
+    public void setVideoPlayer() {
+        try {
+            if (TextUtils.isEmpty(mMediaPreviewViewModel.filePath()))
+                return;
+            mFragmentMediaPreviewBinding.videoView.setDataSource(mMediaPreviewViewModel.filePath());
+            mFragmentMediaPreviewBinding.videoView.setLooping(true);
+            mFragmentMediaPreviewBinding.videoView.prepareAsync(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mediaPlayer) {
+                    isVideoPrepared = true;
 
-    /**
-     * This add the text on the {@link PhotoEditorView} with provided parameters
-     * by default {@link TextView#setText(int)} will be 18sp
-     *
-     * @param textTypeface      typeface for custom font in the text
-     * @param text              text to display
-     * @param colorCodeTextView text color to be displayed
-     */
-    @SuppressLint("ClickableViewAccessibility")
-    public void addText(@Nullable Typeface textTypeface, String text, final int colorCodeTextView, final View delete, final int size) {
-        isBurshEnable = false;
-        brushDrawingView.setBrushDrawingMode(false);
-        final View textRootView = getLayout(ViewType.TEXT);
-        final TextView textInputTv = textRootView.findViewById(R.id.tvPhotoEditorText);
-        final ImageView imgClose = textRootView.findViewById(R.id.imgPhotoEditorClose);
-        final FrameLayout frmBorder = textRootView.findViewById(R.id.frmBorder);
+                    AppLogger.d("usm_media_preview", "onPrepared is called ");
+                    updateVideoPlayState(getUserVisibleHint());
+                    getViewModel().showProgressBar.set(false);
 
-        textInputTv.setText(text);
-        textInputTv.setTextSize(size);
-        textInputTv.setTextColor(colorCodeTextView);
-        if (textTypeface != null) {
-            textInputTv.setTypeface(textTypeface);
-        }
-        MultiTouchListener multiTouchListener = getMultiTouchListener();
-        imgClose.setVisibility(View.GONE);
-        frmBorder.setBackgroundResource(0);
-        if (textInputTv.getText().toString().equals("")) {
-            viewUndo(textRootView, ViewType.TEXT);
-        }
-        multiTouchListener.setOnGestureControl(new MultiTouchListener.OnGestureControl() {
-            @Override
-            public void onClick() {
-                /*boolean isBackgroundVisible = frmBorder.getTag() != null && (boolean) frmBorder.getTag();
-                frmBorder.setBackgroundResource(isBackgroundVisible ? 0 : R.drawable.rounded_border_tv);
-                imgClose.setVisibility(isBackgroundVisible ? View.GONE : View.VISIBLE);
-                frmBorder.setTag(!isBackgroundVisible);*/
-                String textInput = textInputTv.getText().toString();
-                int currentTextColor = textInputTv.getCurrentTextColor();
-                if (mOnPhotoEditorListener != null) {
-                    mOnPhotoEditorListener.onEditTextChangeListener(textRootView, textInput, currentTextColor, size);
                 }
+            });
+            mFragmentMediaPreviewBinding.videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
 
+                    AppLogger.d("usm_media_preview_video", "onError " +
+                            " ErrorCodes i : " + i + " i1 : " + i1);
+                    mFragmentMediaPreviewBinding.videoProgressBar.setVisibility(View.GONE);
 
+                    if (getUserVisibleHint())
+                        MessageAlert.showErrorMessage(getViewDataBinding().getRoot(), "Failed to play video. Unknown Error has Occurred.");
+                    return false;
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setTransparentOverlay() {
+        photoEditor = getPostPreviewActivity().getCurrentPhotoEditor(galleryMedia.getId());
+        if(photoEditor != null){
+//            this.photoEditor = photoEditor;
+            PhotoEditorView photoEditorView  = photoEditor.getPhotoEditorView();
+            mFragmentMediaPreviewBinding.viewEditorHolder.removeAllViews();
+            if(photoEditorView.getParent() != null) {
+                ((ViewGroup)photoEditorView.getParent()).removeView(photoEditorView); // <- fix
             }
-
-            @Override
-            public void onLongClick() {
-                /*String textInput = textInputTv.getText().toString();
-                int currentTextColor = textInputTv.getCurrentTextColor();
-                if (mOnPhotoEditorListener != null) {
-                    mOnPhotoEditorListener.onEditTextChangeListener(textRootView, textInput, currentTextColor);
-                }*/
-                /*{
-                    delete.setVisibility(View.VISIBLE);
-                    // Create a new ClipData.Item from the View object's tag
-                    ClipData.Item item = new ClipData.Item((CharSequence) textRootView.getTag().toString());
-
-                    // Create a new ClipData using the tag as a label, the plain text MIME type, and
-                    // the already-created item. This will create a new ClipDescription object within the
-                    // ClipData, and set its MIME type entry to "text/plain"
-                    String[] mimeTypes = {ClipDescription.MIMETYPE_TEXT_PLAIN};
-                    ClipData data = new ClipData(textRootView.getTag().toString(), mimeTypes, item);
-
-                    // Instantiates the drag shadow builder.
-                    View.DragShadowBuilder dragshadow = new View.DragShadowBuilder(textRootView);
-
-                    // Starts the drag
-                    textRootView.startDrag(data       // data to be dragged
-                            , dragshadow  // drag shadow
-                            , textRootView            // local data about the drag and drop operation
-                            , 0          // flags set to 0 because not using currently
-                    );
-                }*/
+            mFragmentMediaPreviewBinding.viewEditorHolder.addView(photoEditorView);
+            if(photoEditorView.getParent() != null) {
+                ((ViewGroup)photoEditorView.getParent()).removeView(photoEditorView); // <- fix
             }
-        });
+//            photoEditorView.removeAllViews();
+            photoEditor.addAllView(photoEditorView);
 
-        textRootView.setOnTouchListener(multiTouchListener);
-        addViewToParent(textRootView, ViewType.TEXT);
+        }else {
+            PhotoEditorView photoEditorView = (PhotoEditorView)
+                    getLayoutInflater().inflate(R.layout.photo_editor, (ViewGroup) getView(), false);
+//                    getActivity().getLayoutInflater().inflate(R.layout.photo_editor, null);
+            if (getActivity() != null) {
+                if (transparentBitmap == null) {
+                    int width, height;
+                    if (getActivity() != null) {
+                        if (getActivity().getWindowManager() != null) {
+                            Display display = getActivity().getWindowManager().getDefaultDisplay();
+                            Point size = new Point();
+                            display.getSize(size);
+                            width = size.x;
+                            height = size.y;
+                            transparentBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8);
+                            Canvas canvas = new Canvas(transparentBitmap);
+                            canvas.setDensity(80);
+                            canvas.drawColor(Color.parseColor("#01000000"));
+                            Log.e("Width", "" + width);
+                            Log.e("height", "" + height);
+                            Log.e("Bitmap Size =", "" + transparentBitmap.getByteCount());
+                            photoEditorView.getSource().setImageBitmap(transparentBitmap);
+                            mFragmentMediaPreviewBinding.viewEditorHolder.addView(photoEditorView);
+                        }
+                    }
+
+                }
+            }
+        }
     }
 
 
-    /**
-     * This will update text and color on provided view
-     *
-     * @param view      view on which you want update
-     * @param inputText text to update {@link TextView}
-     * @param colorCode color to update on {@link TextView}
-     */
-    public void editText(View view, String inputText, int colorCode, int size) {
-        editText(view, null, inputText, colorCode, size);
+    @Override
+    public void onDestroy() {
+        if (transparentBitmap != null) {
+            transparentBitmap.recycle();
+        }
+        if (galleryMedia != null) {
+            galleryMedia.setCroppedImage(null);
+            galleryMedia.setOverlayImage(null);
+
+            if (galleryMedia.isVideo()) {
+                mFragmentMediaPreviewBinding.videoView.release();
+            }
+
+        }
+
+        super.onDestroy();
     }
 
-    /**
-     * This will update the text and color on provided view
-     *
-     * @param view         root view where text view is a child
-     * @param textTypeface update typeface for custom font in the text
-     * @param inputText    text to update {@link TextView}
-     * @param colorCode    color to update on {@link TextView}
-     */
-    public void editText(View view, Typeface textTypeface, String inputText, int colorCode, int size) {
-        TextView inputTextView = view.findViewById(R.id.tvPhotoEditorText);
-        if (inputTextView != null && addedViews.contains(view) && !TextUtils.isEmpty(inputText)) {
-            inputTextView.setText(inputText);
-            if (textTypeface != null) {
-                inputTextView.setTypeface(textTypeface);
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        AppLogger.d("usm_media_preview", "setUserVisibleHint: isVisibleToUser= " + isVisibleToUser + " ,isVideoPrepared= " + isVideoPrepared);
+
+        if (isResumed() && mMediaPreviewViewModel.isVideo() && isVideoPrepared) {
+            updateVideoPlayState(isVisibleToUser);
+        }
+    }
+
+    private void updateVideoPlayState(boolean isVisibleToUser) {
+        AppLogger.d("usm_media_preview", "updateVideoPlayState: isVisibleToUser= " + isVisibleToUser);
+        if (mFragmentMediaPreviewBinding != null)
+            if (isVisibleToUser && !mFragmentMediaPreviewBinding.videoView.isPlaying()) {
+                mFragmentMediaPreviewBinding.videoView.start();
+            } else if (!isVisibleToUser && mFragmentMediaPreviewBinding.videoView.isPlaying()) {
+                mFragmentMediaPreviewBinding.videoView.pause();
             }
-            inputTextView.setTextColor(colorCode);
-            parentView.updateViewLayout(view, view.getLayoutParams());
-            int i = addedViews.indexOf(view);
-            if (i > -1) addedViews.set(i, view);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+
+        if (mMediaPreviewViewModel.isVideo() && getUserVisibleHint() && isVideoPrepared)
+            updateVideoPlayState(getUserVisibleHint());
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mMediaPreviewViewModel.isVideo() && mFragmentMediaPreviewBinding != null && mFragmentMediaPreviewBinding.videoView.isPlaying())
+            mFragmentMediaPreviewBinding.videoView.pause();
+
+    }
+
+    public void updateDrawingLayoutVisibility(boolean show) {
+        if (show)
+            mMediaPreviewViewModel.setPostEditingType(PostEditing.DRAWING);
+
+    }
+
+    @Override
+    public void undoDrawing() {
+        photoEditor.undo();
+    }
+
+    @Override
+    public void saveDrawing() {
+        updateDrawingLayoutVisibility(false);
+    }
+
+    @Override
+    public void updateParentToolsOptions(boolean show) {
+        if (getActivity() instanceof PostPreviewActivity)
+            if (show)
+                getPostPreviewActivity().showToolsOptions();
+            else
+                getPostPreviewActivity().hideToolsOptions();
+    }
+
+    @Override
+    public void showLoader() {
+        mProgressDialog = CommonUtils.showLoadingDialog(getActivity(), false);
+    }
+
+    @Override
+    public void hideLoader() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.cancel();
+        }
+    }
+
+    public boolean isVideo() {
+        return galleryMedia.isVideo();
+    }
+
+    public void setSharedElementViews(int position) {
+
+        if (getBaseActivity().getSharedElementCallback() != null) {
+            getBaseActivity().getSharedElementCallback().setCurrentPosition(position);
+            getBaseActivity().getSharedElementCallback().setSharedViews(getViewDataBinding().ivThumbnail);
         } else {
-            undo();
+            ActivityCompat.startPostponedEnterTransition(getBaseActivity());
         }
+    }
+
+    private void setViewObserverForAnim(View view) {
+        if (getActivity() instanceof PostPreviewActivity && getPostPreviewActivity().isTransitionPending()) {
+            getPostPreviewActivity().isTransitionPlayed = true;
+            view.getViewTreeObserver().addOnPreDrawListener(
+                    new ViewTreeObserver.OnPreDrawListener() {
+                        @Override
+                        public boolean onPreDraw() {
+                            view.getViewTreeObserver().removeOnPreDrawListener(this);
+                            ActivityCompat.startPostponedEnterTransition(getBaseActivity());
+                            return true;
+                        }
+                    });
+        }
+    }
+
+    @Override
+    public void onEditTextChangeListener(final View rootView, String text, int colorCode, int size) {
+        if (isEditingDisable()) {
+
+            textRootView = rootView;
+            rootView.setVisibility(View.GONE);
+            Bundle bundle = new Bundle();
+            bundle.putString(PostEditingTags.TEXT, text);
+            bundle.putInt(PostEditingTags.TEXT_COLOR, colorCode);
+            bundle.putInt(PostEditingTags.TEXT_SIZE, size);
+            bundle.putBoolean(PostEditingTags.EDIT_EXISTING_TEXT, true);
+
+            showTextEditor(bundle);
+        }
+    }
+
+    public void showTextEditor(Bundle bundle) {
+        if (isEditingDisable()) {
+            if (getActivity() instanceof PostPreviewActivity && !((PostPreviewActivity) getActivity()).isLocked()) {
+                getBaseActivity().lockTouch(true);
+                getPostPreviewActivity().hideViewForDrawing();
+                isTextEditorShow = true;
+                photoEditor.setBrushDrawingMode(false);
+                Intent intent = TextEditorActivity.newIntent(getContext());
+                if (bundle != null)
+                    intent.putExtras(bundle);
+                startActivityForResult(intent, RequestCodes.CODE_TEXT_EDITOR);
+                getActivity().overridePendingTransition(0, 0);
+
+            }
+        }
+    }
+
+    @Override
+    public void onAddViewListener(ViewType viewType, int numberOfAddedViews) {
+        Log.d(TAG, "onAddViewListener() called with: viewType = [" + viewType + "], numberOfAddedViews = [" + numberOfAddedViews + "]");
+    }
+
+    @Override
+    public void onRemoveViewListener(int numberOfAddedViews) {
+        Log.d(TAG, "onRemoveViewListener() called with: numberOfAddedViews = [" + numberOfAddedViews + "]");
+    }
+
+    @Override
+    public void onRemoveViewListener(ViewType viewType, int numberOfAddedViews) {
+        Log.d(TAG, "onRemoveViewListener() called with: viewType = [" + viewType + "], numberOfAddedViews = [" + numberOfAddedViews + "]");
+    }
+
+    @Override
+    public void onStartViewChangeListener(ViewType viewType) {
+        if (ViewType.BRUSH_DRAWING == viewType) {
+            if (getActivity() instanceof PostPreviewActivity) {
+                getPostPreviewActivity().undoVisibility();
+                getPostPreviewActivity().showHideDrawingLayout(true);
+            }
+        }
+        Log.d(TAG, "onStartViewChangeListener() called with: viewType = [" + viewType + "]");
+    }
+
+    @Override
+    public void onStopViewChangeListener(ViewType viewType) {
+        if (ViewType.BRUSH_DRAWING == viewType) {
+            if (getActivity() instanceof PostPreviewActivity)
+                getPostPreviewActivity().showHideDrawingLayout(false);
+        }
+        Log.d(TAG, "onStopViewChangeListener() called with: viewType = [" + viewType + "]");
+    }
+
+
+    @SuppressLint("MissingPermission")
+    public void saveImage(boolean isSave) {
+//        GalleryMedia galleryMedia = mMediaPreviewViewModel.galleryMedia.get();
+        if (!photoEditor.isEditingNotApplied()) {
+            SaveSettings saveSettings = new SaveSettings.Builder()
+                    .setClearViewsEnabled(true)
+                    .setTransparencyEnabled(false)
+                    .build();
+            photoEditor.saveAsBitmap(saveSettings, new OnSaveBitmap() {
+                @Override
+                public void onBitmapReady(Bitmap saveBitmap) {
+                    File overlayFile = saveBitmap(saveBitmap);
+                    AppLogger.d("Image saved ", "Yes Saved successfully");
+                    if (overlayFile != null && overlayFile.exists())
+                        galleryMedia.setOverlayImage(overlayFile.getAbsolutePath());
+//  mMediaPreviewViewModel.galleryMedia.get().setOverlayImage(path);
+                    if (isSave) {
+                        if (getActivity() instanceof ImageSave)
+                            ((ImageSave) getActivity()).saveImage();
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                }
+            });
+        } else {
+            if (isSave) {
+                if (getActivity() instanceof ImageSave)
+                    ((ImageSave) getActivity()).saveImage();
+            }
+        }
+    }
+
+    public boolean isEditing() {
+        return isDrawing() || isStickerShow || isTextEditorShow;
+    }
+
+    public boolean isEditingDisable() {
+        return !isStickerShow && !isDrawingEnable() && !isTextEditorShow && !(getActivity() instanceof PostPreviewActivity && ((PostPreviewActivity) getActivity()).isSharedTransitionPending);
+    }
+
+    @SuppressLint("MissingPermission")
+    public void saveFileInGallery(boolean isVideo) {
+
+        GalleryMedia galleryMedia = mMediaPreviewViewModel.galleryMedia.get();
+
+        boolean shouldReturn = !(getActivity() instanceof PostPreviewActivity) || galleryMedia == null;
+        if (shouldReturn) {
+            return;
+        }
+        if (!photoEditor.isEditingNotApplied()) {
+            photoEditor.saveAsBitmap(new OnSaveBitmap() {
+                @Override
+                public void onBitmapReady(Bitmap saveBitmap) {
+                    if (!galleryMedia.isVideo()) {
+                        Bitmap back;
+                        try {
+
+                            String mediaPath = galleryMedia.isVideo() || galleryMedia.getCroppedImage() == null ? galleryMedia.getPath() : galleryMedia.getCroppedImage();
+
+                            back = MediaStore.Images.Media.getBitmap(getActivity().
+                                    getContentResolver(), Uri.fromFile(new File(mediaPath)));
+                            Bitmap bitmap = applyOverlayOnImage(back, saveBitmap);
+                            String path = getOutputFilePath(galleryMedia.getPath());
+                            String result = BitmapUtil.savebitmap(bitmap, path);
+                            getPostPreviewActivity().showInformationMessage(getString(R.string.message_save_media_success));
+                            refreshGallery(result, getActivity());
+                            refreshAndroidGallery(Uri.parse(result));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        File overlayFile = saveBitmap(saveBitmap);
+                        if (getActivity() instanceof PostPreviewActivity && overlayFile != null) {
+                            String output = getOutputFilePath(galleryMedia.getPath());
+                            getPostPreviewActivity().execFFmpegBinary(galleryMedia.getPath(), overlayFile.getAbsolutePath(), output, isVideo, new TaskListener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+                                    if (getActivity() != null) {
+                                        refreshGallery(output, getActivity());
+                                        refreshAndroidGallery(Uri.parse(output));
+                                        getPostPreviewActivity().lockTouch(false);
+                                    }
+                                }
+
+                                @Override
+                                public void onError(ApiError apiError) {
+                                    AppLogger.d("post_preview_ffmpeg onFailure", "Error");
+                                    getPostPreviewActivity().lockTouch(false);
+                                }
+
+                            });
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    //hideLoader();
+                }
+
+                private String getOutputFilePath(String filePath) {
+
+                    File src = new File(filePath);
+
+                    // save edited media in Fayvo external folder and if file isn't created somehow then
+                    // save renamed file in the same directory where is source media is.
+                    String fileName = src.getName();
+                    fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+
+                    String fileExtension = CommonUtils.getFileExtension(filePath);
+
+                    File destination = PathUtil.getFilePath(getActivity(), false, fileName + "_edited_" + System.currentTimeMillis(), fileExtension);
+
+                    // AppLogger.d("usm_media_preview_save_edited_1", "fileName= " + fileName + " ,fileExtension= " + fileExtension);
+
+                    if (destination != null) {
+                        //   AppLogger.d("usm_media_preview_save_edited_1", "destination= " + destination.getPath() + " absolutePath= " + destination.getAbsolutePath());
+                        return destination.getPath();
+                    } else {
+                        String extension = filePath.substring(filePath.lastIndexOf("."));
+                        return filePath.replace(extension, "_edited_" + System.currentTimeMillis() + extension);
+                    }
+                }
+            });
+        } else {
+
+            String mediaPath = galleryMedia.isVideo() || galleryMedia.getCroppedImage() == null ? galleryMedia.getPath() : galleryMedia.getCroppedImage();
+
+            // make copy of the file in the Fayvo folder as editing is not applied.
+            mMediaPreviewViewModel.saveCopyOfFile(mediaPath, new TaskListener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    getPostPreviewActivity().showInformationMessage(getString(R.string.message_save_media_success));
+
+                    if (response != null && getBaseActivity() != null) {
+                        refreshGallery(response, getBaseActivity());
+                        refreshAndroidGallery(Uri.parse(response));
+                    }
+                }
+
+                @Override
+                public void onError(ApiError apiError) {
+                    getPostPreviewActivity().showInformationMessage(getString(R.string.message_save_media_failure));
+                }
+            });
+
+        }
+    }
+
+    private File saveBitmap(Bitmap bitmapImage) {
+        File file = PathUtil.getInternalUploadFilePath(getContext(), PathUtil.OVERLAY_IMAGE + "_" + System.currentTimeMillis(), ".png");
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file);
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 90, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (fos != null) {
+                try {
+                    fos.close();
+                    fos.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return file;
+    }
+
+    private String saveBitmap(Bitmap bitmapImage, String path) {
+        File file = new File(path);
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file);
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+//                bitmapImage.recycle();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return file.getAbsolutePath();
+    }
+
+    @SuppressLint("MissingPermission")
+    public void saveVideo(boolean isSave) {
+        if (!photoEditor.isEditingNotApplied()) {
+            SaveSettings saveSettings = new SaveSettings.Builder()
+                    .setClearViewsEnabled(true)
+                    .setTransparencyEnabled(false)
+                    .build();
+            photoEditor.saveAsBitmap(saveSettings, new OnSaveBitmap() {
+                @Override
+                public void onBitmapReady(Bitmap saveBitmap) {
+                    File overlayFile = saveBitmap(saveBitmap);
+                    AppLogger.d("Image saved ", "Yes Saved successfully");
+
+                    if (overlayFile != null)
+                        galleryMedia.setOverlayImage(overlayFile.getAbsolutePath());
+//                    mMediaPreviewViewModel.galleryMedia.get().setOverlayImage(overlayFile.getAbsolutePath());
+                    if (isSave) {
+                        if (getActivity() instanceof ImageSave)
+                            ((ImageSave) getActivity()).saveImage();
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    hideLoader();
+                }
+            });
+        } else {
+            if (isSave) {
+                if (getActivity() instanceof ImageSave)
+                    ((ImageSave) getActivity()).saveImage();
+            }
+        }
+
+    }
+
+    public void showEmojiDialog() {
+        isStickerShow = true;
+        photoEditor.setBrushDrawingMode(false);
+        if (stickerBSFragment.isAdded()) {
+            return;
+        } else {
+            stickerBSFragment.show(getActivity().getSupportFragmentManager(), stickerBSFragment.getTag());
+        }
+    }
+
+    public void showBush() {
+        hideKeyboard();
+        photoEditor.setBrushDrawingMode(true);
+    }
+
+    @Override
+    public void onColorChanged(int colorCode) {
+        photoEditor.setBrushColor(colorCode);
+    }
+
+    @Override
+    public void onBrushSizeChanged(int brushSize) {
+        photoEditor.setBrushSize(brushSize);
+    }
+
+    public int getBurshColor() {
+        return photoEditor.getBrushColor();
+    }
+
+    public void setBurshColor(int colorCode) {
+        photoEditor.setBrushColor(colorCode);
+    }
+
+    public float getBrushSize() {
+        return photoEditor.getBrushSize();
+    }
+
+    public void disableDrawing() {
+        photoEditor.onStopDrawing();
+        photoEditor.setBrushDrawingMode(false);
+    }
+
+    public boolean isDrawing() {
+        return photoEditor != null && photoEditor.isBurshEnable();
+    }
+
+    private void setupFilters() {
+        filters.add(PhotoFilter.NONE);
+        filters.add(PhotoFilter.AUTO_FIX);
+        filters.add(PhotoFilter.BRIGHTNESS);
+        filters.add(PhotoFilter.CONTRAST);
+        filters.add(PhotoFilter.DOCUMENTARY);
+        filters.add(PhotoFilter.DUE_TONE);
+        filters.add(PhotoFilter.FILL_LIGHT);
+        filters.add(PhotoFilter.FISH_EYE);
+        filters.add(PhotoFilter.GRAIN);
+        filters.add(PhotoFilter.GRAY_SCALE);
+        filters.add(PhotoFilter.LOMISH);
+        filters.add(PhotoFilter.NEGATIVE);
+        filters.add(PhotoFilter.POSTERIZE);
+        filters.add(PhotoFilter.SATURATE);
+        filters.add(PhotoFilter.SEPIA);
+        filters.add(PhotoFilter.SHARPEN);
+        filters.add(PhotoFilter.TEMPERATURE);
+        filters.add(PhotoFilter.TINT);
+        filters.add(PhotoFilter.VIGNETTE);
+        filters.add(PhotoFilter.CROSS_PROCESS);
+        filters.add(PhotoFilter.BLACK_WHITE);
+    }
+
+    @Override
+    public void onStickerClick(Bitmap bitmap) {
+        isStickerShow = false;
+        photoEditor.addImage(bitmap, delete);
+    }
+
+    @Override
+    public void stickerDismiss() {
+        isStickerShow = false;
+    }
+
+    public void cropImage() {
+        LocalMessageManager.getInstance().addListener(new LocalMessageCallback() {
+            @Override
+            public void handleMessage(@NonNull LocalMessage localMessage) {
+                if (localMessage.getId() == EXTRA_CROP_BITMAP) {
+                    if (localMessage.getObject() != null) {
+                        Bitmap bitmap = (Bitmap) localMessage.getObject();
+
+                        String extension = CommonUtils.getFileExtension(galleryMedia.getPath());
+                        File destination = PathUtil.createCroppedFilePath(PathUtil.CROP_IMAGE + "_" + System.currentTimeMillis(), extension);
+                        //AppLogger.d("usm_cropped_media", "path= " + destination.getAbsolutePath());
+                        mMediaPreviewViewModel.saveBitmapAsFile(destination, bitmap, extension.toLowerCase().contains("png"), new TaskListener<File>() {
+                            @Override
+                            public void onResponse(File file) {
+
+                                if (file != null) {
+
+                                    AppLogger.d("usm_mediaUpload_cropped", "filePath= " + file.getAbsolutePath() + " ,space= " + file.getTotalSpace()
+                                            + " ,canRead= " + file.canRead() + " ,canWrite= " + file.canWrite() + " ,length= " + file.length()
+                                    );
+
+                                    Glide.with(getBaseActivity()).load(file.getAbsoluteFile()).into(mFragmentMediaPreviewBinding.ivThumbnail);
+                                    // mFragmentMediaPreviewBinding.ivThumbnail.setImageBitmap(bitmap);
+                                    galleryMedia.setCroppedImage(file.getAbsolutePath());
+                                }
+                            }
+
+                            @Override
+                            public void onError(ApiError apiError) {
+
+                            }
+                        });
+                    }
+                }
+                LocalMessageManager.getInstance().removeListener(this);
+            }
+        });
+
+        if (getPostPreviewActivity().hasGalleryPermission())
+            new ImageCroper.CropBuilder(galleryMedia.getPath(), this).start();
+        else {
+            getPostPreviewActivity().requestGalleryPermission(new TaskListener<Boolean>() {
+                @Override
+                public void onResponse(Boolean response) {
+                    new ImageCroper.CropBuilder(galleryMedia.getPath(), MediaPreviewFragment.this).start();
+                }
+
+                @Override
+                public void onError(ApiError apiError) {
+
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+        switch (requestCode) {
+            case RequestCodes.CODE_TEXT_EDITOR:
+                if (resultCode == RESULT_OK) {
+                    boolean editExistingText = data.getBooleanExtra(PostEditingTags.EDIT_EXISTING_TEXT, false);
+                    String inputText = data.getStringExtra(PostEditingTags.TEXT);
+                    int textColorCode = data.getIntExtra(PostEditingTags.TEXT_COLOR, Color.BLACK);
+                    int textSize = data.getIntExtra(PostEditingTags.TEXT_SIZE, 40);
+
+
+                    if (!editExistingText)
+                        photoEditor.addText(inputText, textColorCode, delete, textSize);
+                    else {
+                        if (textRootView != null) {
+                            textRootView.setVisibility(View.VISIBLE);
+                            photoEditor.editText(textRootView, inputText, textColorCode, textSize);
+                        }
+                    }
+                } else {
+                    if (textRootView != null) {
+                        textRootView.setVisibility(View.VISIBLE);
+                    }
+                }
+                isTextEditorShow = false;
+                if (getPostPreviewActivity() != null) {
+                    getPostPreviewActivity().showEditorIcon();
+                }
+                break;
+        }
+
+
+    }
+
+    private PostPreviewActivity getPostPreviewActivity() {
+        return ((PostPreviewActivity) getActivity());
     }
 
     public boolean hasDrawing() {
-        if (brushDrawingView != null)
-            return brushDrawingView.isDrawingEmpty();
-        return false;
+        return !photoEditor.hasDrawing();
     }
 
-    /**
-     * Adds emoji to the {@link PhotoEditorView} which you drag,rotate and scale using pinch
-     * if {@link PhotoEditor.Builder#setPinchTextScalable(boolean)} enabled
-     *
-     * @param emojiName unicode in form of string to display emoji
-     */
-    public void addEmoji(String emojiName, LinearLayout delete) {
-        addEmoji(null, emojiName, delete);
-    }
 
-    /**
-     * Adds emoji to the {@link PhotoEditorView} which you drag,rotate and scale using pinch
-     * if {@link PhotoEditor.Builder#setPinchTextScalable(boolean)} enabled
-     *
-     * @param emojiTypeface typeface for custom font to show emoji unicode in specific font
-     * @param emojiName     unicode in form of string to display emoji
-     */
-    public void addEmoji(Typeface emojiTypeface, String emojiName, final LinearLayout delete) {
-        brushDrawingView.setBrushDrawingMode(false);
-        isBurshEnable = false;
-        final View emojiRootView = getLayout(ViewType.EMOJI);
-        final TextView emojiTextView = emojiRootView.findViewById(R.id.tvPhotoEditorText);
-        final FrameLayout frmBorder = emojiRootView.findViewById(R.id.frmBorder);
-        final ImageView imgClose = emojiRootView.findViewById(R.id.imgPhotoEditorClose);
-
-        if (emojiTypeface != null) {
-            emojiTextView.setTypeface(emojiTypeface);
-        }
-        emojiTextView.setTextSize(56);
-        emojiTextView.setText(emojiName);
-        MultiTouchListener multiTouchListener = getMultiTouchListener();
-        imgClose.setVisibility(View.GONE);
-        frmBorder.setBackgroundResource(0);
-        multiTouchListener.setOnGestureControl(new MultiTouchListener.OnGestureControl() {
-            @Override
-            public void onClick() {
-//                boolean isBackgroundVisible = frmBorder.getTag() != null && (boolean) frmBorder.getTag();
-//                frmBorder.setBackgroundResource(isBackgroundVisible ? 0 : R.drawable.rounded_border_tv);
-//                imgClose.setVisibility(isBackgroundVisible ? View.GONE : View.VISIBLE);
-//                frmBorder.setTag(!isBackgroundVisible);
+    public void refreshAndroidGallery(Uri fileUri) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Intent mediaScanIntent = new Intent(
+                    Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            mediaScanIntent.setData(fileUri);
+            if (getActivity() != null) {
+                getBaseActivity().sendBroadcast(mediaScanIntent);
             }
-
-            @Override
-            public void onLongClick() {
-                {
-                    /*delete.setVisibility(View.VISIBLE);
-                    // Create a new ClipData.Item from the View object's tag
-                    ClipData.Item item = new ClipData.Item((CharSequence) emojiRootView.getTag().toString());
-
-                    // Create a new ClipData using the tag as a label, the plain text MIME type, and
-                    // the already-created item. This will create a new ClipDescription object within the
-                    // ClipData, and set its MIME type entry to "text/plain"
-                    String[] mimeTypes = {ClipDescription.MIMETYPE_TEXT_PLAIN};
-                    ClipData data = new ClipData(emojiRootView.getTag().toString(), mimeTypes, item);
-
-                    // Instantiates the drag shadow builder.
-                    View.DragShadowBuilder dragshadow = new View.DragShadowBuilder(emojiRootView);
-
-                    // Starts the drag
-                    emojiRootView.startDrag(data       // data to be dragged
-                            , dragshadow  // drag shadow
-                            , emojiRootView            // local data about the drag and drop operation
-                            , 0          // flags set to 0 because not using currently
-                    );*/
-                }
-            }
-        });
-        emojiRootView.setOnTouchListener(multiTouchListener);
-        addViewToParent(emojiRootView, ViewType.EMOJI);
-    }
-
-    public boolean isEditingNotApplied() {
-        return addedViews.size() == 0;
-    }
-
-    /**
-     * Add to root view from image,emoji and text to our parent view
-     *
-     * @param rootView rootview of image,text and emoji
-     */
-    private void addViewToParent(View rootView, ViewType viewType) {
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-        parentView.addView(rootView, params);
-        addedViews.add(rootView);
-        if (mOnPhotoEditorListener != null)
-            mOnPhotoEditorListener.onAddViewListener(viewType, addedViews.size());
-    }
-
-    /**
-     * Create a new instance and scalable touchview
-     *
-     * @return scalable multitouch listener
-     */
-    @NonNull
-    private MultiTouchListener getMultiTouchListener() {
-        MultiTouchListener multiTouchListener = new MultiTouchListener(
-                deleteView,
-                parentView,
-                this.imageView,
-                isTextPinchZoomable,
-                mOnPhotoEditorListener, this, dragDeleteListener);
-
-        //multiTouchListener.setOnMultiTouchListener(this);
-
-        return multiTouchListener;
-    }
-
-    /**
-     * Get root view by its type i.e image,text and emoji
-     *
-     * @param viewType image,text or emoji
-     * @return rootview
-     */
-    private View getLayout(final ViewType viewType) {
-        View rootView = null;
-        switch (viewType) {
-            case TEXT:
-                rootView = mLayoutInflater.inflate(R.layout.view_photo_editor_text, null);
-                TextView txtText = rootView.findViewById(R.id.tvPhotoEditorText);
-                if (txtText != null && mDefaultTextTypeface != null) {
-                    txtText.setGravity(Gravity.CENTER);
-                    if (mDefaultEmojiTypeface != null) {
-                        txtText.setTypeface(mDefaultTextTypeface);
-                    }
-                }
-                break;
-            case IMAGE:
-                rootView = mLayoutInflater.inflate(R.layout.view_photo_editor_image, null);
-                break;
-            case EMOJI:
-                rootView = mLayoutInflater.inflate(R.layout.view_photo_editor_text, null);
-                TextView txtTextEmoji = rootView.findViewById(R.id.tvPhotoEditorText);
-                if (txtTextEmoji != null) {
-                    if (mDefaultEmojiTypeface != null) {
-                        txtTextEmoji.setTypeface(mDefaultEmojiTypeface);
-                    }
-                    txtTextEmoji.setGravity(Gravity.CENTER);
-                    txtTextEmoji.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-                }
-                break;
-        }
-
-        if (rootView != null) {
-            //We are setting tag as ViewType to identify what type of the view it is
-            //when we remove the view from stack i.e onRemoveViewListener(ViewType viewType, int numberOfAddedViews);
-            rootView.setTag(viewType);
-            final ImageView imgClose = rootView.findViewById(R.id.imgPhotoEditorClose);
-            final View finalRootView = rootView;
-            if (imgClose != null) {
-                imgClose.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        viewUndo(finalRootView, viewType);
-                    }
-                });
-            }
-        }
-        return rootView;
-    }
-
-    /**
-     * Enable/Disable drawing mode to draw on {@link PhotoEditorView}
-     *
-     * @param brushDrawingMode true if mode is enabled
-     */
-    public void setBrushDrawingMode(boolean brushDrawingMode) {
-        if (brushDrawingView != null) {
-            isBurshEnable = brushDrawingMode;
-            if(brushDrawingMode) {
-                brushDrawingView.bringToFront();
-            }
-            brushDrawingView.setBrushDrawingMode(brushDrawingMode);
-
-        }
-    }
-
-    public boolean isBurshEnable() {
-        return isBurshEnable;
-    }
-
-    /**
-     * @return true is brush mode is enabled
-     */
-    public Boolean getBrushDrawableMode() {
-        return brushDrawingView != null && brushDrawingView.getBrushDrawingMode();
-    }
-
-    /**
-     * set the size of bursh user want to paint on canvas i.e {@link BrushDrawingView}
-     *
-     * @param size size of brush
-     */
-    public void setBrushSize(float size) {
-        if (brushDrawingView != null)
-            brushDrawingView.setBrushSize(size);
-    }
-
-    /**
-     * set opacity/transparency of brush while painting on {@link BrushDrawingView}
-     *
-     * @param opacity opacity is in form of percentage
-     */
-    public void setOpacity(@IntRange(from = 0, to = 100) int opacity) {
-        if (brushDrawingView != null) {
-            opacity = (int) ((opacity / 100.0) * 255.0);
-            brushDrawingView.setOpacity(opacity);
-        }
-    }
-
-    /**
-     * set brush color which user want to paint
-     *
-     * @param color color value for paint
-     */
-    public void setBrushColor(@ColorInt int color) {
-        if (brushDrawingView != null)
-            brushDrawingView.setBrushColor(color);
-    }
-
-    /**
-     * set the eraser size
-     * <br></br>
-     * <b>Note :</b> Eraser size is different from the normal brush size
-     *
-     * @param brushEraserSize size of eraser
-     */
-    public void setBrushEraserSize(float brushEraserSize) {
-        if (brushDrawingView != null)
-            brushDrawingView.setBrushEraserSize(brushEraserSize);
-    }
-
-    void setBrushEraserColor(@ColorInt int color) {
-        if (brushDrawingView != null)
-            brushDrawingView.setBrushEraserColor(color);
-    }
-
-    /**
-     * @return provide the size of eraser
-     * @see PhotoEditor#setBrushEraserSize(float)
-     */
-    public float getEraserSize() {
-        return brushDrawingView != null ? brushDrawingView.getEraserSize() : 0;
-    }
-
-    /**
-     * @return provide the size of eraser
-     * @see PhotoEditor#setBrushSize(float)
-     */
-    public float getBrushSize() {
-        if (brushDrawingView != null)
-            return brushDrawingView.getBrushSize();
-        return 0;
-    }
-
-    /**
-     * @return provide the size of eraser
-     * @see PhotoEditor#setBrushColor(int)
-     */
-    public int getBrushColor() {
-        if (brushDrawingView != null)
-            return brushDrawingView.getBrushColor();
-        return 0;
-    }
-
-    /**
-     * <p>
-     * Its enables eraser mode after that whenever user drags on screen this will erase the existing
-     * paint
-     * <br>
-     * <b>Note</b> : This eraser will work on paint views only
-     * <p>
-     */
-    public void brushEraser() {
-        if (brushDrawingView != null)
-            brushDrawingView.brushEraser();
-    }
-
-    /*private void viewUndo() {
-        if (addedViews.size() > 0) {
-            parentView.removeView(addedViews.remove(addedViews.size() - 1));
-            if (mOnPhotoEditorListener != null)
-                mOnPhotoEditorListener.onRemoveViewListener(addedViews.size());
-        }
-    }*/
-
-    public void viewUndo(View removedView, ViewType viewType) {
-        if (addedViews.size() > 0) {
-            if (addedViews.contains(removedView)) {
-                parentView.removeView(removedView);
-                addedViews.remove(removedView);
-//                redoViews.add(removedView);
-                if (mOnPhotoEditorListener != null) {
-                    mOnPhotoEditorListener.onRemoveViewListener(addedViews.size());
-                    mOnPhotoEditorListener.onRemoveViewListener(viewType, addedViews.size());
-                }
-            }
-        }
-    }
-
-    /**
-     * Undo the last operation perform on the {@link PhotoEditor}
-     *
-     * @return true if there nothing more to undo
-     */
-    public boolean undo() {
-        /*if (addedViews.size() > 0) {
-            View removeView = addedViews.get(addedViews.size() - 1);
-            if (removeView instanceof BrushDrawingView) {
-                return brushDrawingView != null && brushDrawingView.undo();
-            } else {
-                addedViews.remove(addedViews.size() - 1);
-                parentView.removeView(removeView);
-                redoViews.add(removeView);
-            }
-            if (mOnPhotoEditorListener != null) {
-                mOnPhotoEditorListener.onRemoveViewListener(addedViews.size());
-                Object viewTag = removeView.getTag();
-                if (viewTag != null && viewTag instanceof ViewType) {
-                    mOnPhotoEditorListener.onRemoveViewListener(((ViewType) viewTag), addedViews.size());
-                }
-            }
-        }*/
-
-        for (int i = addedViews.size() - 1; i >= 0; i--) {
-            View removeView = addedViews.get(i);
-            if (removeView instanceof BrushDrawingView) {
-                return brushDrawingView != null && brushDrawingView.undo();
-            }
-        }
-        return addedViews.size() != 0;
-    }
-
-    /**
-     * Redo the last operation perform on the {@link PhotoEditor}
-     *
-     * @return true if there nothing more to redo
-     */
-    public boolean redo() {
-        if (redoViews.size() > 0) {
-            View redoView = redoViews.get(redoViews.size() - 1);
-            if (redoView instanceof BrushDrawingView) {
-                return brushDrawingView != null && brushDrawingView.redo();
-            } else {
-                redoViews.remove(redoViews.size() - 1);
-                parentView.addView(redoView);
-                addedViews.add(redoView);
-            }
-            Object viewTag = redoView.getTag();
-            if (mOnPhotoEditorListener != null && viewTag != null && viewTag instanceof ViewType) {
-                mOnPhotoEditorListener.onAddViewListener(((ViewType) viewTag), addedViews.size());
-            }
-        }
-        return redoViews.size() != 0;
-    }
-
-    private void clearBrushAllViews() {
-        if (brushDrawingView != null)
-            brushDrawingView.clearAll();
-    }
-
-    /**
-     * Removes all the edited operations performed {@link PhotoEditorView}
-     * This will also clear the undo and redo stack
-     */
-    public void clearAllViews() {
-        for (int i = 0; i < addedViews.size(); i++) {
-            parentView.removeView(addedViews.get(i));
-        }
-        if (addedViews.contains(brushDrawingView)) {
-            parentView.addView(brushDrawingView);
-        }
-        addedViews.clear();
-        redoViews.clear();
-        clearBrushAllViews();
-    }
-
-    /**
-     * Remove all helper boxes from views
-     */
-    @UiThread
-    public void clearHelperBox() {
-        for (int i = 0; i < parentView.getChildCount(); i++) {
-            View childAt = parentView.getChildAt(i);
-            FrameLayout frmBorder = childAt.findViewById(R.id.frmBorder);
-            if (frmBorder != null) {
-                frmBorder.setBackgroundResource(0);
-            }
-            ImageView imgClose = childAt.findViewById(R.id.imgPhotoEditorClose);
-            if (imgClose != null) {
-                imgClose.setVisibility(View.GONE);
-            }
-        }
-    }
-
-    /**
-     * Setup of custom effect using effect type and set parameters values
-     *
-     * @param customEffect {@link CustomEffect.Builder#setParameter(String, Object)}
-     */
-    public void setFilterEffect(CustomEffect customEffect) {
-        parentView.setFilterEffect(customEffect);
-    }
-
-    /**
-     * Set pre-define filter available
-     *
-     * @param filterType type of filter want to apply {@link PhotoEditor}
-     */
-    public void setFilterEffect(PhotoFilter filterType) {
-        parentView.setFilterEffect(filterType);
-    }
-
-    /**
-     * A callback to save the edited image asynchronously
-     */
-    public interface OnSaveListener {
-
-        /**
-         * Call when edited image is saved successfully on given path
-         *
-         * @param imagePath path on which image is saved
-         */
-        void onSuccess(@NonNull String imagePath);
-
-        /**
-         * Call when failed to saved image on given path
-         *
-         * @param exception exception thrown while saving image
-         */
-        void onFailure(@NonNull Exception exception);
-    }
-
-
-    /**
-     * @param imagePath      path on which image to be saved
-     * @param onSaveListener callback for saving image
-     * @see OnSaveListener
-     * @deprecated Use {@link #saveAsFile(String, OnSaveListener)} instead
-     */
-    @SuppressLint("StaticFieldLeak")
-    @RequiresPermission(allOf = {Manifest.permission.WRITE_EXTERNAL_STORAGE})
-    @Deprecated
-    public void saveImage(@NonNull final String imagePath, @NonNull final OnSaveListener onSaveListener) {
-        saveAsFile(imagePath, onSaveListener);
-    }
-
-    /**
-     * Save the edited image on given path
-     *
-     * @param imagePath      path on which image to be saved
-     * @param onSaveListener callback for saving image
-     * @see OnSaveListener
-     */
-    @RequiresPermission(allOf = {Manifest.permission.WRITE_EXTERNAL_STORAGE})
-    public void saveAsFile(@NonNull final String imagePath, @NonNull final OnSaveListener onSaveListener) {
-        saveAsFile(imagePath, new SaveSettings.Builder().build(), onSaveListener);
-    }
-
-    /**
-     * Save the edited image on given path
-     *
-     * @param imagePath      path on which image to be saved
-     * @param saveSettings   builder for multiple save options {@link SaveSettings}
-     * @param onSaveListener callback for saving image
-     * @see OnSaveListener
-     */
-    @SuppressLint("StaticFieldLeak")
-    @RequiresPermission(allOf = {Manifest.permission.WRITE_EXTERNAL_STORAGE})
-    public void saveAsFile(@NonNull final String imagePath,
-                           @NonNull final SaveSettings saveSettings,
-                           @NonNull final OnSaveListener onSaveListener) {
-        Log.d(TAG, "Image Path: " + imagePath);
-        /*Bitmap bitmap = getBitmapByView(parentView, imagePath);
-        if (bitmap != null) {
-            //Clear all views if its enabled in save settings
-            if (saveSettings.isClearViewsEnabled()) clearAllViews();
-            onSaveListener.onSuccess(imagePath);
         } else {
-            onSaveListener.onFailure(null);
-        }*/
-        parentView.saveFilter(new OnSaveBitmap() {
-            @Override
-            public void onBitmapReady(Bitmap saveBitmap) {
-                new AsyncTask<String, String, Exception>() {
-
-                    @Override
-                    protected void onPreExecute() {
-                        super.onPreExecute();
-                        clearHelperBox();
-                        parentView.setDrawingCacheEnabled(false);
-                    }
-
-                    @SuppressLint("MissingPermission")
-                    @Override
-                    protected Exception doInBackground(String... strings) {
-                        // Create a media file name
-                        File file = new File(imagePath);
-                        try {
-                            FileOutputStream out = new FileOutputStream(file, false);
-                            if (parentView != null) {
-                                parentView.setDrawingCacheEnabled(true);
-                                Bitmap drawingCache = saveSettings.isTransparencyEnabled()
-                                        ? BitmapUtil.removeTransparency(parentView.getDrawingCache())
-                                        : parentView.getDrawingCache();
-                                drawingCache.compress(Bitmap.CompressFormat.PNG, 100, out);
-                            }
-                            out.flush();
-                            out.close();
-                            Log.d(TAG, "Filed Saved Successfully");
-                            return null;
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Log.d(TAG, "Failed to save File");
-                            return e;
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(Exception e) {
-                        super.onPostExecute(e);
-                        if (e == null) {
-                            //Clear all views if its enabled in save settings
-//                            if (saveSettings.isClearViewsEnabled()) clearAllViews();
-                            onSaveListener.onSuccess(imagePath);
-                        } else {
-                            onSaveListener.onFailure(e);
-                        }
-                    }
-
-                }.execute();
+            if (getActivity() != null) {
+                getBaseActivity().sendBroadcast(new Intent(
+                        Intent.ACTION_MEDIA_MOUNTED,
+                        Uri.parse("file://" + Environment.getExternalStorageDirectory())));
             }
-
-            @Override
-            public void onFailure(Exception e) {
-                onSaveListener.onFailure(e);
-            }
-        });
-    }
-
-
-    /**
-     * Save the edited image as bitmap
-     *
-     * @param onSaveBitmap callback for saving image as bitmap
-     * @see OnSaveBitmap
-     */
-    @SuppressLint("StaticFieldLeak")
-    public void saveAsBitmap(@NonNull final OnSaveBitmap onSaveBitmap) {
-        saveAsBitmap(new SaveSettings.Builder().build(), onSaveBitmap);
-    }
-
-    /**
-     * Save the edited image as bitmap
-     *
-     * @param saveSettings builder for multiple save options {@link SaveSettings}
-     * @param onSaveBitmap callback for saving image as bitmap
-     * @see OnSaveBitmap
-     */
-    @SuppressLint("StaticFieldLeak")
-    public void saveAsBitmap(@NonNull final SaveSettings saveSettings,
-                             @NonNull final OnSaveBitmap onSaveBitmap) {
-        parentView.saveFilter(new OnSaveBitmap() {
-            @Override
-            public void onBitmapReady(Bitmap saveBitmap) {
-                new AsyncTask<String, String, Bitmap>() {
-                  /*  public Bitmap takeViewScreenShot(View view) {
-                        try {
-                            view.setDrawingCacheEnabled(true);
-                            view.buildDrawingCache();
-                            view.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_LOW);
-                            Bitmap b1 = view.getDrawingCache();
-                            Bitmap b2 = null;
-                            if (b1 != null) {
-                                float aspectRatio = b1.getWidth() / (float) b1.getHeight();
-                                int width = 1440;
-                                int height = Math.round(width / aspectRatio);
-                                // b2 = Bitmap.createScaledBitmap(b1, width, height, false);
-                                //  b2 = b1.copy(Bitmap.Config.ARGB_8888, false);
-                                b2 = b1.copy(Bitmap.Config.ARGB_8888, false);
-                                // b2 = b1.copy(Bitmap.Config.RGB_565, false);
-
-                                //  b1.recycle();
-
-                            }
-                            view.destroyDrawingCache();
-
-                            return b2;
-                        } catch (Exception e) {
-                            return null;
-                        } catch (OutOfMemoryError e) {
-                            return null;
-                        }
-                    }*/
-
-                   /* public File savebitmap(Bitmap bmp, int count) throws IOException {
-                        String filename = count+"pippo.png";
-                        File sd = Environment.getExternalStorageDirectory();
-                        File dest = new File(sd, filename);
-
-                        try {
-                            FileOutputStream out = new FileOutputStream(dest);
-                            bmp.compress(Bitmap.CompressFormat.PNG, 90, out);
-                            out.flush();
-                            out.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        Log.d("ImagePath", dest.getAbsolutePath());
-                        return dest;
-                    }*/
-
-                    @Override
-                    protected void onPreExecute() {
-                        super.onPreExecute();
-                        clearHelperBox();
-                        parentView.setDrawingCacheEnabled(false);
-                    }
-
-                    @Override
-                    protected Bitmap doInBackground(String... strings) {
-                        if (parentView != null) {
-                            try {
-                                parentView.setDrawingCacheEnabled(true);
-                                if (parentView.getDrawingCache() != null && !parentView.getDrawingCache().isRecycled()) {
-                                    return saveSettings.isTransparencyEnabled() ?
-                                            BitmapUtil.removeTransparency(parentView.getDrawingCache())
-                                            : parentView.getDrawingCache();
-                                } else {
-                                    return null;
-                                }
-                            }catch (Exception e){
-                                e.printStackTrace();
-                                return null;
-                            }
-                        } else {
-                            return null;
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(Bitmap bitmap) {
-                        super.onPostExecute(bitmap);
-                        if (bitmap != null) {
-                            onSaveBitmap.onBitmapReady(bitmap);
-                        } else {
-                            onSaveBitmap.onFailure(new Exception("Failed to load the bitmap"));
-                        }
-                    }
-
-                }.execute();
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                onSaveBitmap.onFailure(e);
-            }
-        });
-    }
-
-    private static String convertEmoji(String emoji) {
-        String returnedEmoji;
-        try {
-            int convertEmojiToInt = Integer.parseInt(emoji.substring(2), 16);
-            returnedEmoji = new String(Character.toChars(convertEmojiToInt));
-        } catch (NumberFormatException e) {
-            returnedEmoji = "";
         }
-        return returnedEmoji;
     }
 
-    /**
-     * Callback on editing operation perform on {@link PhotoEditorView}
-     *
-     * @param onPhotoEditorListener {@link OnPhotoEditorListener}
-     */
-    public void setOnPhotoEditorListener(@NonNull OnPhotoEditorListener onPhotoEditorListener) {
-        this.mOnPhotoEditorListener = onPhotoEditorListener;
-    }
-
-    /**
-     * Check if any changes made need to save
-     *
-     * @return true if nothing is there to change
-     */
-    public boolean isCacheEmpty() {
-        return addedViews.size() == 0 && redoViews.size() == 0;
-    }
-
-
-    @Override
-    public void onViewAdd(BrushDrawingView brushDrawingView) {
-        if (redoViews.size() > 0) {
-            redoViews.remove(redoViews.size() - 1);
-        }
-        addedViews.add(brushDrawingView);
-        if (mOnPhotoEditorListener != null) {
-            mOnPhotoEditorListener.onAddViewListener(ViewType.BRUSH_DRAWING, addedViews.size());
-        }
+    public boolean isDrawingEnable() {
+        if (photoEditor == null)
+            return false;
+        return photoEditor.isBurshEnable();
     }
 
     @Override
-    public void onViewRemoved(BrushDrawingView brushDrawingView) {
-        if (addedViews.size() > 0) {
-            View removeView = addedViews.remove(addedViews.size() - 1);
-            if (!(removeView instanceof BrushDrawingView)) {
-                parentView.removeView(removeView);
-            }
-            redoViews.add(removeView);
-        }
-        if (mOnPhotoEditorListener != null) {
-            mOnPhotoEditorListener.onRemoveViewListener(addedViews.size());
-            mOnPhotoEditorListener.onRemoveViewListener(ViewType.BRUSH_DRAWING, addedViews.size());
-        }
+    public void onMove() {
+        ((ActivityPostPreviewBinding) getPostPreviewActivity().getViewDataBinding()).ivDelete.setVisibility(View.GONE);
     }
 
     @Override
-    public void onStartDrawing() {
-        if (mOnPhotoEditorListener != null) {
-            mOnPhotoEditorListener.onStartViewChangeListener(ViewType.BRUSH_DRAWING);
-        }
+    public void onTouch() {
+        ((ActivityPostPreviewBinding) getPostPreviewActivity().getViewDataBinding()).ivDelete.setVisibility(View.GONE);
     }
 
     @Override
-    public void onStopDrawing() {
-        if (mOnPhotoEditorListener != null) {
-            mOnPhotoEditorListener.onStopViewChangeListener(ViewType.BRUSH_DRAWING);
-        }
+    public void onDragStop() {
+        ((ActivityPostPreviewBinding) getPostPreviewActivity().getViewDataBinding()).ivDelete.setVisibility(View.VISIBLE);
     }
 
-
-    /**
-     * Builder pattern to define {@link PhotoEditor} Instance
-     */
-    public static class Builder {
-
-        private Context context;
-        private PhotoEditorView parentView;
-        private ImageView imageView;
-        private View deleteView;
-        private BrushDrawingView brushDrawingView;
-        private Typeface textTypeface;
-        private Typeface emojiTypeface;
-        //By Default pinch zoom on text is enabled
-        private boolean isTextPinchZoomable = true;
-        private MultiTouchListener.DragDeleteListener dragDeleteListener;
-
-        /**
-         * Building a PhotoEditor which requires a Context and PhotoEditorView
-         * which we have setup in our xml layout
-         *
-         * @param context         context
-         * @param photoEditorView {@link PhotoEditorView}
-         */
-        public Builder(Context context, PhotoEditorView photoEditorView) {
-            this.context = context;
-            parentView = photoEditorView;
-            imageView = photoEditorView.getSource();
-            brushDrawingView = photoEditorView.getBrushDrawingView();
-        }
-
-        public Builder setDeleteView(View deleteView) {
-            this.deleteView = deleteView;
-            return this;
-        }
-
-        /**
-         * set default text font to be added on image
-         *
-         * @param textTypeface typeface for custom font
-         * @return {@link Builder} instant to build {@link PhotoEditor}
-         */
-        public Builder setDefaultTextTypeface(Typeface textTypeface) {
-            this.textTypeface = textTypeface;
-            return this;
-        }
-
-        /**
-         * set default font specific to add emojis
-         *
-         * @param emojiTypeface typeface for custom font
-         * @return {@link Builder} instant to build {@link PhotoEditor}
-         */
-        public Builder setDefaultEmojiTypeface(Typeface emojiTypeface) {
-            this.emojiTypeface = emojiTypeface;
-            return this;
-        }
-
-        public Builder setdragDeleteListener(MultiTouchListener.DragDeleteListener dragDeleteListener) {
-            this.dragDeleteListener = dragDeleteListener;
-            return this;
-        }
-
-        /**
-         * set false to disable pinch to zoom on text insertion.By deafult its true
-         *
-         * @param isTextPinchZoomable flag to make pinch to zoom
-         * @return {@link Builder} instant to build {@link PhotoEditor}
-         */
-        public Builder setPinchTextScalable(boolean isTextPinchZoomable) {
-            this.isTextPinchZoomable = isTextPinchZoomable;
-            return this;
-        }
-
-        /**
-         * @return build PhotoEditor instance
-         */
-        public PhotoEditor build() {
-            return new PhotoEditor(this);
-        }
-    }
-
-    /**
-     * Provide the list of emoji in form of unicode string
-     *
-     * @param context context
-     * @return list of emoji unicode
-     */
-    public static ArrayList<String> getEmojis(Context context) {
-        ArrayList<String> convertedEmojiList = new ArrayList<>();
-        String[] emojiList = context.getResources().getStringArray(R.array.photo_editor_emoji);
-        for (String emojiUnicode : emojiList) {
-            convertedEmojiList.add(convertEmoji(emojiUnicode));
-        }
-        return convertedEmojiList;
-    }
 }
