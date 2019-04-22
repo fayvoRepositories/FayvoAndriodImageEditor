@@ -81,6 +81,14 @@ public class PhotoEditor implements BrushViewChangeListener {
         redoViews = new ArrayList<>();
     }
 
+
+    public void setPhotoEditorView(PhotoEditorView parentView){
+        this.parentView = parentView;
+    }
+
+    public PhotoEditorView getPhotoEditorView(){
+        return parentView;
+    }
     /**
      * This will add image on {@link PhotoEditorView} which you drag,rotate and scale using pinch
      * if {@link PhotoEditor.Builder#setPinchTextScalable(boolean)} enabled
