@@ -91,7 +91,11 @@ public class PhotoEditor implements BrushViewChangeListener {
             if(addedViews.get(i).getParent() != null) {
                 ((ViewGroup)addedViews.get(i).getParent()).removeView(addedViews.get(i)); // <- fix
             }
-            photoEditorView.addView(addedViews.get(i));
+            if(photoEditorView != null) {
+                if(addedViews.get(i) != null) {
+                    photoEditorView.addView(addedViews.get(i));
+                }
+            }
         }
     }
 
