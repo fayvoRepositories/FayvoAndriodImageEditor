@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.AnticipateOvershootInterpolator;
 import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -96,6 +97,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private ConstraintSet mConstraintSet = new ConstraintSet();
     private boolean mIsFilterVisible;
     private List<PhotoFilter> filters = new ArrayList<>();
+    private FrameLayout photoViewHolder;
 
     LinearLayout ivDelete;
 
@@ -113,6 +115,16 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         super.onCreate(savedInstanceState);
         makeFullScreen();
         setContentView(R.layout.activity_edit_image);
+
+        mPhotoEditor = new PhotoEditor.Builder(this)
+                .setPinchTextScalable(true) // set flag to make text scalable when pinch
+                //.setDefaultTextTypeface(mTextRobotoTf)
+                //.setDefaultEmojiTypeface(mEmojiTypeFace)
+                .setdragDeleteListener(this)
+                .setDeleteView(ivDelete)
+                .build(); // build photo editor sdk
+        mPhotoEditorView =  mPhotoEditor.getPhotoEditorView();
+
 
         initViews();
         ffmpeg = FFmpeg.getInstance(EditImageActivity.this);
@@ -138,13 +150,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         //Typeface mTextRobotoTf = ResourcesCompat.getFont(this, R.font.roboto_medium);
         //Typeface mEmojiTypeFace = Typeface.createFromAsset(getAssets(), "emojione-android.ttf");
 
-        mPhotoEditor = new PhotoEditor.Builder(this, mPhotoEditorView)
-                .setPinchTextScalable(true) // set flag to make text scalable when pinch
-                //.setDefaultTextTypeface(mTextRobotoTf)
-                //.setDefaultEmojiTypeface(mEmojiTypeFace)
-                .setdragDeleteListener(this)
-                .setDeleteView(ivDelete)
-                .build(); // build photo editor sdk
+
+
         ivDelete.setOnDragListener(new DragDropOnDragListener(mPhotoEditor));
         mPhotoEditor.setOnPhotoEditorListener(this);
         loadFFMpegBinary();
@@ -274,7 +281,10 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         });
         rvColor.setAdapter(colorPickerAdapter);
 
-        mPhotoEditorView = findViewById(R.id.photoEditorView);
+//        mPhotoEditorView = findViewById(R.id.photoEditorView);
+        photoViewHolder = findViewById(R.id.photoViewHolder);
+        photoViewHolder.addView(mPhotoEditorView);
+
         mTxtCurrentTool = findViewById(R.id.txtCurrentTool);
         mRvTools = findViewById(R.id.rvConstraintTools);
         mRvFilters = findViewById(R.id.rvFilterView);

@@ -2,11 +2,14 @@ package ja.burhanrashid52.photoeditor;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -18,6 +21,7 @@ import android.support.annotation.RequiresPermission;
 import android.support.annotation.UiThread;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -1056,6 +1060,37 @@ public class PhotoEditor implements BrushViewChangeListener {
             parentView = photoEditorView;
             imageView = photoEditorView.getSource();
             brushDrawingView = photoEditorView.getBrushDrawingView();
+        }
+
+        public Builder(Context context) {
+            this.context = context;
+            parentView = getPhotoEditorView(context);
+            imageView = parentView.getSource();
+            imageView.setImageBitmap(getTransparentBitmap(context));
+            brushDrawingView = parentView.getBrushDrawingView();
+        }
+
+        private PhotoEditorView getPhotoEditorView(Context context){
+            PhotoEditorView photoEditorView = (PhotoEditorView)
+                    ((Activity)context).getLayoutInflater().inflate(R.layout.photo_editor_view, null, false);
+            return photoEditorView;
+        }
+
+        Bitmap getTransparentBitmap(Context context){
+            Bitmap transparentBitmap;
+            Display display = ((Activity)context).getWindowManager().getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            int width = size.x;
+            int height = size.y;
+            transparentBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8);
+            Canvas canvas = new Canvas(transparentBitmap);
+            canvas.setDensity(80);
+            canvas.drawColor(Color.parseColor("#01000000"));
+            Log.e("Width", "" + width);
+            Log.e("height", "" + height);
+            Log.e("Bitmap Size =", "" + transparentBitmap.getByteCount());
+            return transparentBitmap;
         }
 
         public Builder setDeleteView(View deleteView) {
