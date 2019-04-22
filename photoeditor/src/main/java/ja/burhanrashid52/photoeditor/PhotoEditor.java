@@ -91,11 +91,12 @@ public class PhotoEditor implements BrushViewChangeListener {
             if(addedViews.get(i).getParent() != null) {
                 ((ViewGroup)addedViews.get(i).getParent()).removeView(addedViews.get(i)); // <- fix
             }
-            if(photoEditorView != null) {
+            photoEditorView.addView(addedViews.get(i));
+            /*if(photoEditorView != null) {
                 if(addedViews.get(i) != null) {
                     photoEditorView.addView(addedViews.get(i));
                 }
-            }
+            }*/
         }
     }
 
@@ -414,7 +415,7 @@ public class PhotoEditor implements BrushViewChangeListener {
         View rootView = null;
         switch (viewType) {
             case TEXT:
-                rootView = mLayoutInflater.inflate(R.layout.view_photo_editor_text, null);
+                rootView = mLayoutInflater.inflate(R.layout.view_photo_editor_text, null, false);
                 TextView txtText = rootView.findViewById(R.id.tvPhotoEditorText);
                 if (txtText != null && mDefaultTextTypeface != null) {
                     txtText.setGravity(Gravity.CENTER);
@@ -424,10 +425,10 @@ public class PhotoEditor implements BrushViewChangeListener {
                 }
                 break;
             case IMAGE:
-                rootView = mLayoutInflater.inflate(R.layout.view_photo_editor_image, null);
+                rootView = mLayoutInflater.inflate(R.layout.view_photo_editor_image, null, false);
                 break;
             case EMOJI:
-                rootView = mLayoutInflater.inflate(R.layout.view_photo_editor_text, null);
+                rootView = mLayoutInflater.inflate(R.layout.view_photo_editor_text, null, false);
                 TextView txtTextEmoji = rootView.findViewById(R.id.tvPhotoEditorText);
                 if (txtTextEmoji != null) {
                     if (mDefaultEmojiTypeface != null) {
