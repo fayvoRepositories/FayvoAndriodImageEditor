@@ -191,6 +191,7 @@ public class MultiTouchListener implements OnTouchListener {
                 break;
             case MotionEvent.ACTION_CANCEL:
                 dragDeleteListener.onDragStop();
+                scaleDraggedView(view, false);
                 Log.d("Drag ", "ACTION_CANCEL");
                 if (deleteView != null) {
                     deleteView.setVisibility(View.VISIBLE);
@@ -200,6 +201,7 @@ public class MultiTouchListener implements OnTouchListener {
                 break;
             case MotionEvent.ACTION_UP:
                 dragDeleteListener.onDragStop();
+                scaleDraggedView(view, false);
                 Log.d("Drag ", "ACTION_UP");
                 mActivePointerId = INVALID_POINTER_ID;
                 if (deleteView != null && isViewInBounds(deleteView, x, y)) {
@@ -224,6 +226,8 @@ public class MultiTouchListener implements OnTouchListener {
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
+                dragDeleteListener.onDragStop();
+                scaleDraggedView(view, false);
                 Log.d("Drag ", "ACTION_POINTER_UP");
                 int pointerIndexPointerUp = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                 int pointerId = event.getPointerId(pointerIndexPointerUp);
@@ -236,6 +240,10 @@ public class MultiTouchListener implements OnTouchListener {
                 if (deleteView != null) {
                     deleteView.setVisibility(View.GONE);
                 }
+                break;
+            default:
+                scaleDraggedView(view, false);
+                dragDeleteListener.onDragStop();
                 break;
         }
         return true;
@@ -259,6 +267,7 @@ public class MultiTouchListener implements OnTouchListener {
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(view, "scaleX", from, to);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(view, "scaleY", from, to);
         AnimatorSet scaleAnimSet = new AnimatorSet();
+        scaleAnimSet.setDuration(100);
         scaleAnimSet.play(scaleX).with(scaleY);
         scaleAnimSet.addListener(new Animator.AnimatorListener() {
             @Override

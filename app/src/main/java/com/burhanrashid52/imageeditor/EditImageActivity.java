@@ -87,7 +87,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private PropertiesBSFragment mPropertiesBSFragment;
     private EmojiBSFragment mEmojiBSFragment;
     private StickerBSFragment mStickerBSFragment;
-    private TextView mTxtCurrentTool;
+//    private TextView mTxtCurrentTool;
     private VideoView videoView;
     private Typeface mWonderFont;
     private RecyclerView mRvTools, mRvFilters;
@@ -115,7 +115,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         super.onCreate(savedInstanceState);
         makeFullScreen();
         setContentView(R.layout.activity_edit_image);
-
+        ivDelete = findViewById(R.id.ivDelete);
         mPhotoEditor = new PhotoEditor.Builder(this)
                 .setPinchTextScalable(true) // set flag to make text scalable when pinch
                 //.setDefaultTextTypeface(mTextRobotoTf)
@@ -124,9 +124,9 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 .setDeleteView(ivDelete)
                 .build(); // build photo editor sdk
         mPhotoEditorView =  mPhotoEditor.getPhotoEditorView();
-
-
         initViews();
+
+
         ffmpeg = FFmpeg.getInstance(EditImageActivity.this);
         mWonderFont = Typeface.createFromAsset(getAssets(), "beyond_wonderland.ttf");
         setupFilters();
@@ -152,7 +152,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
 
 
-        ivDelete.setOnDragListener(new DragDropOnDragListener(mPhotoEditor));
+//        ivDelete.setOnDragListener(new DragDropOnDragListener(mPhotoEditor));
         mPhotoEditor.setOnPhotoEditorListener(this);
         loadFFMpegBinary();
         //Set Image Dynamically
@@ -283,9 +283,9 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
 //        mPhotoEditorView = findViewById(R.id.photoEditorView);
         photoViewHolder = findViewById(R.id.photoViewHolder);
+        photoViewHolder.removeAllViews();
         photoViewHolder.addView(mPhotoEditorView);
-
-        mTxtCurrentTool = findViewById(R.id.txtCurrentTool);
+//        mTxtCurrentTool = findViewById(R.id.txtCurrentTool);
         mRvTools = findViewById(R.id.rvConstraintTools);
         mRvFilters = findViewById(R.id.rvFilterView);
         mRootView = findViewById(R.id.rootView);
@@ -306,7 +306,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         imgSticker = findViewById(R.id.ivSticker);
         imgSticker.setOnClickListener(this);
 
-        ivDelete = findViewById(R.id.ivDelete);
+
 
 
         imgUndo = findViewById(R.id.imgUndo);
@@ -337,7 +337,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
             @Override
             public void onDone(String inputText, int colorCode, int size) {
                 mPhotoEditor.editText(rootView, inputText, colorCode, size);
-                mTxtCurrentTool.setText(R.string.label_text);
+//                mTxtCurrentTool.setText(R.string.label_text);
             }
         });
     }
@@ -432,7 +432,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 break;
             case R.id.ivBrush:
                 mPhotoEditor.setBrushDrawingMode(true);
-                mTxtCurrentTool.setText(R.string.label_brush);
+//                mTxtCurrentTool.setText(R.string.label_brush);
                 slideUp(brushLayout);
 //                mPropertiesBSFragment.show(getSupportFragmentManager(), mPropertiesBSFragment.getTag());
                 break;
@@ -444,7 +444,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     @Override
                     public void onDone(String inputText, int colorCode, int size) {
                         mPhotoEditor.addText(inputText, colorCode, ivDelete, size);
-                        mTxtCurrentTool.setText(R.string.label_text);
+//                        mTxtCurrentTool.setText(R.string.label_text);
                     }
                 });
                 break;
@@ -605,26 +605,26 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     @Override
     public void onColorChanged(int colorCode) {
         mPhotoEditor.setBrushColor(colorCode);
-        mTxtCurrentTool.setText(R.string.label_brush);
+//        mTxtCurrentTool.setText(R.string.label_brush);
     }
 
     @Override
     public void onBrushSizeChanged(int brushSize) {
         mPhotoEditor.setBrushSize(brushSize);
-        mTxtCurrentTool.setText(R.string.label_brush);
+//        mTxtCurrentTool.setText(R.string.label_brush);
     }
 
     @Override
     public void onEmojiClick(String emojiUnicode) {
         mPhotoEditor.addEmoji(emojiUnicode, ivDelete);
-        mTxtCurrentTool.setText(R.string.label_emoji);
+//        mTxtCurrentTool.setText(R.string.label_emoji);
 
     }
 
     @Override
     public void onStickerClick(Bitmap bitmap) {
         mPhotoEditor.addImage(bitmap, ivDelete);
-        mTxtCurrentTool.setText(R.string.label_sticker);
+//        mTxtCurrentTool.setText(R.string.label_sticker);
     }
 
     @Override
@@ -670,7 +670,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         switch (toolType) {
             case BRUSH:
                 mPhotoEditor.setBrushDrawingMode(true);
-                mTxtCurrentTool.setText(R.string.label_brush);
+//                mTxtCurrentTool.setText(R.string.label_brush);
                 mPropertiesBSFragment.show(getSupportFragmentManager(), mPropertiesBSFragment.getTag());
                 break;
             case TEXT:
@@ -684,10 +684,10 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 break;
             case ERASER:
                 mPhotoEditor.brushEraser();
-                mTxtCurrentTool.setText(R.string.label_eraser);
+//                mTxtCurrentTool.setText(R.string.label_eraser);
                 break;
             case FILTER:
-                mTxtCurrentTool.setText(R.string.label_filter);
+//                mTxtCurrentTool.setText(R.string.label_filter);
                 showFilter(true);
                 break;
 
@@ -723,7 +723,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     public void onBackPressed() {
         if (mIsFilterVisible) {
             showFilter(false);
-            mTxtCurrentTool.setText(R.string.app_name);
+//            mTxtCurrentTool.setText(R.string.app_name);
         } else if (!mPhotoEditor.isCacheEmpty()) {
             showSaveDialog();
         } else {
@@ -801,7 +801,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
             @Override
             public void onDone(String inputText, int colorCode, int size) {
                 mPhotoEditor.addText(inputText, colorCode, ivDelete, size);
-                mTxtCurrentTool.setText(R.string.label_text);
+//                mTxtCurrentTool.setText(R.string.label_text);
             }
         });
     }
