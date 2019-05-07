@@ -1076,7 +1076,7 @@ public class PhotoEditor implements BrushViewChangeListener {
             return photoEditorView;
         }
 
-        Bitmap getTransparentBitmap(Context context){
+        public Bitmap getTransparentBitmap(Context context){
             Bitmap transparentBitmap;
             Display display = ((Activity)context).getWindowManager().getDefaultDisplay();
             Point size = new Point();
