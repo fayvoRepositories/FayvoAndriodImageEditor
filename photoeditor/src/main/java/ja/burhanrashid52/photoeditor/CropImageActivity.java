@@ -66,7 +66,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         ;
         BitmapFactory.Options oldOptions = new BitmapFactory.Options();
         oldOptions.inJustDecodeBounds = true;
-//        Bitmap tempBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), oldOptions);
+       Bitmap tempBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), oldOptions);
         Bitmap bitmap;
         if(isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight)){
             BitmapFactory.Options options = new BitmapFactory.Options();
