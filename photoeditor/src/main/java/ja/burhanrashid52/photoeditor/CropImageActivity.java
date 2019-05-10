@@ -1,7 +1,6 @@
 package ja.burhanrashid52.photoeditor;
 
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -30,7 +29,7 @@ import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_SHOW;
 
 public class CropImageActivity extends AppCompatActivity implements View.OnClickListener, CropImageView.OnCropImageCompleteListener, CropImageView.OnSetImageUriCompleteListener {
 
-    private CropImageView mCropImageView;
+    private CropViewImageView mCropImageView;
     private ImageView resultIv;
     private ImageView btnRotateLeft;
     private ImageView btnRotateRight;
