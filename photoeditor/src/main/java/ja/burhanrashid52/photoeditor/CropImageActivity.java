@@ -29,7 +29,7 @@ import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_SHOW;
 
 public class CropImageActivity extends AppCompatActivity implements View.OnClickListener, CropImageView.OnCropImageCompleteListener, CropImageView.OnSetImageUriCompleteListener {
 
-    private CropViewImageView mCropImageView;
+    private CropImageView mCropImageView;
     private ImageView resultIv;
     private ImageView btnRotateLeft;
     private ImageView btnRotateRight;
@@ -66,7 +66,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         ;
         BitmapFactory.Options oldOptions = new BitmapFactory.Options();
         oldOptions.inJustDecodeBounds = true;
-        Bitmap tempBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), oldOptions);
+//        Bitmap tempBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), oldOptions);
         Bitmap bitmap;
         if(isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight)){
             BitmapFactory.Options options = new BitmapFactory.Options();
@@ -80,6 +80,9 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 
         mCropImageView.setImageBitmap(bitmap);
         mCropImageView.setVisibility(View.VISIBLE);
+        if(isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight)){
+            mCropImageView.rotateImage(90);
+        }
         btnlay.setVisibility(View.VISIBLE);
     }
 
