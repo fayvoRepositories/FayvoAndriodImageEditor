@@ -62,13 +62,11 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 //        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
 //        Uri source = Uri.fromFile((new File(path)));
 
-
-        ;
-        BitmapFactory.Options oldOptions = new BitmapFactory.Options();
+   BitmapFactory.Options oldOptions = new BitmapFactory.Options();
         oldOptions.inJustDecodeBounds = true;
-       Bitmap tempBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), oldOptions);
+        Bitmap tempBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), oldOptions);
         Bitmap bitmap;
-        if(isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight)){
+        if(isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight) || isVerticalPanorama(oldOptions.outWidth, oldOptions.outHeight)){
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = 8;
             options.inPreferredConfig = Bitmap.Config.ARGB_4444;
@@ -87,9 +85,12 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
     }
 
     public static boolean isPanoramicImage(int width, int height) {
-        return width > 0 && height > 0 && ((height / width > 4) || (width / height >= 4));
+        return width > 0 && height > 0 && ((height / width > 2)) || (width == height);
     }
 
+    public static boolean isVerticalPanorama(int width, int height){
+        return width > 0 && height > 0 && ((width / height >= 2));
+    }
     private boolean isRotateShow() {
         if (getIntent().getExtras() != null) {
             return getIntent().getExtras().getBoolean(IMAGE_ROTATE_SHOW, true);
