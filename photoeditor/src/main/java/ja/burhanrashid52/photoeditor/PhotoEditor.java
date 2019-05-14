@@ -286,6 +286,7 @@ public class PhotoEditor implements BrushViewChangeListener {
                 inputTextView.setTypeface(textTypeface);
             }
             inputTextView.setTextColor(colorCode);
+            inputTextView.setTextSize(size);
             parentView.updateViewLayout(view, view.getLayoutParams());
             int i = addedViews.indexOf(view);
             if (i > -1) addedViews.set(i, view);
