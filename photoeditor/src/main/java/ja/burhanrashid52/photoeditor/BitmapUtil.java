@@ -104,6 +104,6 @@ class BitmapUtil {
         } catch (GLException e) {
             return null;
         }
-        return Bitmap.createBitmap(bitmapSource, w, h, Bitmap.Config.ARGB_8888);
+        return Bitmap.createBitmap(bitmapSource, w, h, Bitmap.Config.ARGB_4444);
     }
 }

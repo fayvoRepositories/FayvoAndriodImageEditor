@@ -807,7 +807,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     }
 
     public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
-        Bitmap output = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.ARGB_8888);
+        Bitmap output = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.ARGB_4444);
         Canvas canvas = new Canvas(output);
         Matrix m = new Matrix();
         m.setScale((float) newWidth / bm.getWidth(), (float) newHeight / bm.getHeight());

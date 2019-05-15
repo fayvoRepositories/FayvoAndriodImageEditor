@@ -868,52 +868,6 @@ public class PhotoEditor implements BrushViewChangeListener {
             @Override
             public void onBitmapReady(Bitmap saveBitmap) {
                 new AsyncTask<String, String, Bitmap>() {
-                  /*  public Bitmap takeViewScreenShot(View view) {
-                        try {
-                            view.setDrawingCacheEnabled(true);
-                            view.buildDrawingCache();
-                            view.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_LOW);
-                            Bitmap b1 = view.getDrawingCache();
-                            Bitmap b2 = null;
-                            if (b1 != null) {
-                                float aspectRatio = b1.getWidth() / (float) b1.getHeight();
-                                int width = 1440;
-                                int height = Math.round(width / aspectRatio);
-                                // b2 = Bitmap.createScaledBitmap(b1, width, height, false);
-                                //  b2 = b1.copy(Bitmap.Config.ARGB_8888, false);
-                                b2 = b1.copy(Bitmap.Config.ARGB_8888, false);
-                                // b2 = b1.copy(Bitmap.Config.RGB_565, false);
-
-                                //  b1.recycle();
-
-                            }
-                            view.destroyDrawingCache();
-
-                            return b2;
-                        } catch (Exception e) {
-                            return null;
-                        } catch (OutOfMemoryError e) {
-                            return null;
-                        }
-                    }*/
-
-                   /* public File savebitmap(Bitmap bmp, int count) throws IOException {
-                        String filename = count+"pippo.png";
-                        File sd = Environment.getExternalStorageDirectory();
-                        File dest = new File(sd, filename);
-
-                        try {
-                            FileOutputStream out = new FileOutputStream(dest);
-                            bmp.compress(Bitmap.CompressFormat.PNG, 90, out);
-                            out.flush();
-                            out.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        Log.d("ImagePath", dest.getAbsolutePath());
-                        return dest;
-                    }*/
-
                     @Override
                     protected void onPreExecute() {
                         super.onPreExecute();
@@ -1159,4 +1113,6 @@ public class PhotoEditor implements BrushViewChangeListener {
         }
         return convertedEmojiList;
     }
+
+
 }
