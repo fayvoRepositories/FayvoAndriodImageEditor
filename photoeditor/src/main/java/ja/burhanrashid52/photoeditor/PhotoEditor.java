@@ -1021,8 +1021,7 @@ public class PhotoEditor implements BrushViewChangeListener {
             this.context = context;
             parentView = getPhotoEditorView(context);
             imageView = parentView.getSource();
-//            imageView.setImageBitmap(getTransparentBitmap(context));
-            imageView.setBackgroundColor(Color.TRANSPARENT);
+            imageView.setImageBitmap(getTransparentBitmap(context));
             brushDrawingView = parentView.getBrushDrawingView();
         }
 
@@ -1041,7 +1040,7 @@ public class PhotoEditor implements BrushViewChangeListener {
             int height = size.y;
             transparentBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8);
             Canvas canvas = new Canvas(transparentBitmap);
-            canvas.setDensity(80);
+            canvas.setDensity(30);
             canvas.drawColor(Color.parseColor("#01000000"));
             Log.e("Width", "" + width);
             Log.e("height", "" + height);

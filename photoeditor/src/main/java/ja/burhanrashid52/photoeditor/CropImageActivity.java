@@ -1,8 +1,10 @@
 package ja.burhanrashid52.photoeditor;
 
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -66,6 +68,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         oldOptions.inJustDecodeBounds = true;
         Bitmap tempBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), oldOptions);
         Bitmap bitmap;
+
         if(isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight) || isVerticalPanorama(oldOptions.outWidth, oldOptions.outHeight)){
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = 8;
@@ -80,12 +83,14 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         mCropImageView.setVisibility(View.VISIBLE);
         if(isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight)){
             mCropImageView.rotateImage(90);
+        }else{
+            mCropImageView.rotateImage(getCameraPhotoOrientation(Uri.parse(path), path));
         }
         btnlay.setVisibility(View.VISIBLE);
     }
 
     public static boolean isPanoramicImage(int width, int height) {
-        return width > 0 && height > 0 && ((height / width > 2)) || (width == height);
+        return width > 0 && height > 0 && ((height / width > 2));
     }
 
     public static boolean isVerticalPanorama(int width, int height){
@@ -129,24 +134,36 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 
     }
 
-    private String saveImage(Bitmap bitmap) {
-//        String extension = path.substring(path.lastIndexOf("."));
-        File file = new File(path);
-        String fileName = file.getAbsolutePath();
+    public int getCameraPhotoOrientation(Uri imageUri, String imagePath){
+        int rotate = 0;
         try {
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 90, bytes);
-            File f = new File(fileName);
-            f.createNewFile();
-            FileOutputStream fo = new FileOutputStream(f);
-            fo.write(bytes.toByteArray());
-            fo.close();
-        } catch (IOException e) {
+            getContentResolver().notifyChange(imageUri, null);
+            File imageFile = new File(imagePath);
+
+            ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+            Log.d("Orientation = ",orientation+"");
+
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    rotate = 270;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    rotate = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    rotate = 90;
+                    break;
+            }
+
+            Log.i("RotateImage", "Exif orientation: " + orientation);
+            Log.i("RotateImage", "Rotate value: " + rotate);
+        } catch (Exception e) {
             e.printStackTrace();
-            fileName = null;
         }
-        return fileName;
+        return rotate;
     }
+
 
     @Override
     protected void onStart() {
