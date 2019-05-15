@@ -1021,7 +1021,8 @@ public class PhotoEditor implements BrushViewChangeListener {
             this.context = context;
             parentView = getPhotoEditorView(context);
             imageView = parentView.getSource();
-            imageView.setImageBitmap(getTransparentBitmap(context));
+//            imageView.setImageBitmap(getTransparentBitmap(context));
+            imageView.setBackgroundColor(Color.TRANSPARENT);
             brushDrawingView = parentView.getBrushDrawingView();
         }
 

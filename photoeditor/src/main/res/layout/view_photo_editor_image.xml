@@ -11,7 +11,7 @@
         android:layout_gravity="top|start"
         android:elevation="1dp"
         android:visibility="gone"
-        android:src="@drawable/ic_remove" />
+         />
 
     <FrameLayout
         android:id="@+id/frmBorder"
@@ -22,14 +22,14 @@
 
         <ImageView
             android:id="@+id/imgPhotoEditorImage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_margin="2dp"
             android:adjustViewBounds="true"
             android:contentDescription="@string/app_name"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_remove" />
+            />
 
     </FrameLayout>
 
