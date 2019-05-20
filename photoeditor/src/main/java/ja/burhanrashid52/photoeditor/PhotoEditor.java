@@ -3,16 +3,11 @@ package ja.burhanrashid52.photoeditor;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipDescription;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
-import android.os.Environment;
+import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
@@ -21,7 +16,6 @@ import android.support.annotation.RequiresPermission;
 import android.support.annotation.UiThread;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,11 +26,9 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -201,6 +193,9 @@ public class PhotoEditor implements BrushViewChangeListener {
         if (textTypeface != null) {
             textInputTv.setTypeface(textTypeface);
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            textInputTv.setAutoSizeTextTypeUniformWithConfiguration(size, 80, 1, TextView.AUTO_SIZE_TEXT_TYPE_UNIFORM);
+        }
         MultiTouchListener multiTouchListener = getMultiTouchListener();
         imgClose.setVisibility(View.GONE);
         frmBorder.setBackgroundResource(0);
@@ -280,10 +275,14 @@ public class PhotoEditor implements BrushViewChangeListener {
      */
     public void editText(View view, Typeface textTypeface, String inputText, int colorCode, int size) {
         TextView inputTextView = view.findViewById(R.id.tvPhotoEditorText);
+
         if (inputTextView != null && addedViews.contains(view) && !TextUtils.isEmpty(inputText)) {
             inputTextView.setText(inputText);
             if (textTypeface != null) {
                 inputTextView.setTypeface(textTypeface);
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                inputTextView.setAutoSizeTextTypeUniformWithConfiguration(size, 80, 1, TextView.AUTO_SIZE_TEXT_TYPE_UNIFORM);
             }
             inputTextView.setTextColor(colorCode);
             inputTextView.setTextSize(size);
@@ -1021,7 +1020,7 @@ public class PhotoEditor implements BrushViewChangeListener {
             this.context = context;
             parentView = getPhotoEditorView(context);
             imageView = parentView.getSource();
-            imageView.setImageBitmap(getTransparentBitmap(context));
+            imageView.setImageBitmap(TransparentBitmap.getInstance(new WeakReference<>(context)).getTransparentBitmap());
             brushDrawingView = parentView.getBrushDrawingView();
         }
 
@@ -1031,7 +1030,7 @@ public class PhotoEditor implements BrushViewChangeListener {
             return photoEditorView;
         }
 
-        public Bitmap getTransparentBitmap(Context context){
+        /*public Bitmap getTransparentBitmap(Context context){
             Bitmap transparentBitmap;
             Display display = ((Activity)context).getWindowManager().getDefaultDisplay();
             Point size = new Point();
@@ -1046,7 +1045,7 @@ public class PhotoEditor implements BrushViewChangeListener {
             Log.e("height", "" + height);
             Log.e("Bitmap Size =", "" + transparentBitmap.getByteCount());
             return transparentBitmap;
-        }
+        }*/
 
         public Builder setDeleteView(View deleteView) {
             this.deleteView = deleteView;
