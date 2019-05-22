@@ -17,7 +17,7 @@
         android:id="@+id/frmBorder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/rounded_border_tv">
+>
 
         <ImageView
             android:id="@+id/imgPhotoEditorImage"
@@ -26,7 +26,6 @@
             android:layout_gravity="center"
             android:adjustViewBounds="true"
             android:contentDescription="@string/app_name"
-            android:src="@drawable/image_transparent"
             android:scaleType="fitCenter"
             />
 

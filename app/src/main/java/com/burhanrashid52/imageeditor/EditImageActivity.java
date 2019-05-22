@@ -623,7 +623,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
     @Override
     public void onStickerClick(Bitmap bitmap) {
-        mPhotoEditor.addImage(bitmap, ivDelete);
+        mPhotoEditor.addImage(bitmap);
 //        mTxtCurrentTool.setText(R.string.label_sticker);
     }
 

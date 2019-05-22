@@ -105,7 +105,7 @@ public class PhotoEditor implements BrushViewChangeListener {
      *
      * @param desiredImage bitmap image you want to add
      */
-    public void addImage(Bitmap desiredImage, final LinearLayout delete) {
+    public void addImage(Bitmap desiredImage) {
         final View imageRootView = getLayout(ViewType.IMAGE);
         final ImageView imageView = imageRootView.findViewById(R.id.imgPhotoEditorImage);
         final FrameLayout frmBorder = imageRootView.findViewById(R.id.frmBorder);
@@ -429,7 +429,12 @@ public class PhotoEditor implements BrushViewChangeListener {
                 }
                 break;
             case IMAGE:
-                rootView = mLayoutInflater.inflate(R.layout.view_photo_editor_image, null, false);
+                try {
+                    rootView = mLayoutInflater.inflate(R.layout.view_photo_editor_image, null, false);
+                }catch (OutOfMemoryError outOfMemoryError){
+                    System.gc();
+                }
+
                 break;
             case EMOJI:
                 rootView = mLayoutInflater.inflate(R.layout.view_photo_editor_text, null, false);
