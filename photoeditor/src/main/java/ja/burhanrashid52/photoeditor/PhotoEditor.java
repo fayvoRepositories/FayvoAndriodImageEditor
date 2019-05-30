@@ -32,6 +32,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
+import ja.burhanrashid52.photoeditor.filter.BitmapFilters;
+
 /**
  * <p>
  * This class in initialize by {@link PhotoEditor.Builder} using a builder pattern with multiple
@@ -59,6 +61,7 @@ public class PhotoEditor implements BrushViewChangeListener {
     private Typeface mDefaultTextTypeface;
     private Typeface mDefaultEmojiTypeface;
     private boolean isBurshEnable = false;
+    private BitmapFilters.Filters filter;
 
 
     private PhotoEditor(Builder builder) {
@@ -1118,5 +1121,11 @@ public class PhotoEditor implements BrushViewChangeListener {
         return convertedEmojiList;
     }
 
+    public BitmapFilters.Filters getFilter() {
+        return filter;
+    }
 
+    public void setFilter(BitmapFilters.Filters filter) {
+        this.filter = filter;
+    }
 }
