@@ -61,7 +61,7 @@ public class PhotoEditor implements BrushViewChangeListener {
     private Typeface mDefaultTextTypeface;
     private Typeface mDefaultEmojiTypeface;
     private boolean isBurshEnable = false;
-    private BitmapFilters.Filters filter;
+    private int filterIndex;
 
 
     private PhotoEditor(Builder builder) {
@@ -1121,11 +1121,11 @@ public class PhotoEditor implements BrushViewChangeListener {
         return convertedEmojiList;
     }
 
-    public BitmapFilters.Filters getFilter() {
-        return filter;
+    public int getFilter() {
+        return filterIndex;
     }
 
-    public void setFilter(BitmapFilters.Filters filter) {
-        this.filter = filter;
+    public void setFilter(int filterIndex) {
+        this.filterIndex = filterIndex;
     }
 }
