@@ -197,7 +197,11 @@ public class PhotoEditor implements BrushViewChangeListener {
             textInputTv.setTypeface(textTypeface);
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            textInputTv.setAutoSizeTextTypeUniformWithConfiguration(size, 80, 1, TextView.AUTO_SIZE_TEXT_TYPE_UNIFORM);
+            int newSize = size;
+            if(size >= 100){
+                newSize  = size - 10;
+            }
+            textInputTv.setAutoSizeTextTypeUniformWithConfiguration(newSize, 100, 1, TextView.AUTO_SIZE_TEXT_TYPE_UNIFORM);
         }
         MultiTouchListener multiTouchListener = getMultiTouchListener();
         imgClose.setVisibility(View.GONE);
