@@ -60,7 +60,7 @@ dependencies {
     })
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation "com.android.support:support-v13:27.1.1"
-    implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.0'
+    implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
     implementation "com.andkulikov:transitionseverywhere:1.8.1"
 //    implementation "com.andkulikov:transitionseverywhere:2.0.0-alpha02"
     implementation 'com.oginotihiro:cropview:1.0.0'

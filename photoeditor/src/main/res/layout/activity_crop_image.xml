@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:splitMotionEvents="false"
     android:background="#000000">
 
     <ImageView
@@ -42,6 +43,7 @@
         android:layout_height="match_parent"
         app:cropShowProgressBar="false"
         android:layout_above="@+id/btnlay"
+        app:cropMultiTouchEnabled="false"
         android:visibility="visible">
 
     </com.theartofdev.edmodo.cropper.CropImageView>
