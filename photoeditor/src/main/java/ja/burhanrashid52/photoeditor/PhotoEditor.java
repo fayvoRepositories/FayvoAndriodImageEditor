@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
@@ -289,7 +290,13 @@ public class PhotoEditor implements BrushViewChangeListener {
                 inputTextView.setTypeface(textTypeface);
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                inputTextView.setAutoSizeTextTypeUniformWithConfiguration(size, 80, 1, TextView.AUTO_SIZE_TEXT_TYPE_UNIFORM);
+                int newSize = dpToPx(size);
+                if(newSize < dpToPx(80)){
+                    inputTextView.setAutoSizeTextTypeUniformWithConfiguration(size, 80, 1, TextView.AUTO_SIZE_TEXT_TYPE_UNIFORM);
+                }else{
+                    inputTextView.setAutoSizeTextTypeUniformWithConfiguration(79, 80, 1, TextView.AUTO_SIZE_TEXT_TYPE_UNIFORM);
+                }
+
             }
             inputTextView.setTextColor(colorCode);
             inputTextView.setTextSize(size);
@@ -300,7 +307,10 @@ public class PhotoEditor implements BrushViewChangeListener {
             undo();
         }
     }
-
+    public static int dpToPx(float dp) {
+        float density = Resources.getSystem().getDisplayMetrics().density;
+        return Math.round(dp * density);
+    }
     public boolean hasDrawing() {
         if (brushDrawingView != null)
             return brushDrawingView.isDrawingEmpty();
