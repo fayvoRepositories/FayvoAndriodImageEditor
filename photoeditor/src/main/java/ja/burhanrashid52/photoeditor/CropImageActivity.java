@@ -26,6 +26,7 @@ import eu.inloop.localmessagemanager.LocalMessageManager;
 
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_BITMAP;
 
+import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_CANCEL;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_PATH;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_SHOW;
 
@@ -120,6 +121,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        LocalMessageManager.getInstance().send(EXTRA_CROP_CANCEL);
         setResult(RESULT_CANCELED);
     }
 
@@ -205,6 +207,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
             finish();
         } catch (Exception e) {
             Log.d("Exception", e.getStackTrace().toString());
+            LocalMessageManager.getInstance().send(EXTRA_CROP_CANCEL);
             setResult(RESULT_CANCELED);
             finish();
         }
