@@ -1,7 +1,5 @@
 package ja.burhanrashid52.photoeditor;
 
-
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
@@ -17,10 +15,7 @@ import android.widget.LinearLayout;
 import com.oginotihiro.cropview.CropUtil;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 import eu.inloop.localmessagemanager.LocalMessageManager;
 
@@ -65,27 +60,38 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 //        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
 //        Uri source = Uri.fromFile((new File(path)));
 
-   BitmapFactory.Options oldOptions = new BitmapFactory.Options();
-        oldOptions.inJustDecodeBounds = true;
-        Bitmap tempBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), oldOptions);
-        Bitmap bitmap;
-
-        if(isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight) || isVerticalPanorama(oldOptions.outWidth, oldOptions.outHeight)){
+        try {
+            BitmapFactory.Options oldOptions = new BitmapFactory.Options();
+            oldOptions.inJustDecodeBounds = true;
+            Bitmap tempBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), oldOptions);
+            Bitmap bitmap;
             BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inSampleSize = 8;
-            options.inPreferredConfig = Bitmap.Config.ARGB_4444;
-            options.outWidth = oldOptions.outWidth/8;
-            bitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), options);
-        }else{
-            bitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath());
-        }
+            if (isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight) || isVerticalPanorama(oldOptions.outWidth, oldOptions.outHeight)) {
+                options.inSampleSize = 8;
+                options.inPreferredConfig = Bitmap.Config.ARGB_4444;
+                options.outWidth = oldOptions.outWidth / 8;
+                bitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), options);
+            } else {
+                if (oldOptions.outWidth > 4000 || oldOptions.outHeight > 4000) {
+                    options.inSampleSize = 4;
+                    options.inPreferredConfig = Bitmap.Config.ARGB_4444;
+                    options.outWidth = oldOptions.outWidth / 2;
+                    options.outHeight = oldOptions.outHeight / 2;
+                    bitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), options);
+                } else {
+                    bitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath());
+                }
+            }
 
-        mCropImageView.setImageBitmap(bitmap);
-        mCropImageView.setVisibility(View.VISIBLE);
-        if(isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight)){
-            mCropImageView.rotateImage(90);
-        }else{
-            mCropImageView.rotateImage(getCameraPhotoOrientation(Uri.parse(path), path));
+            mCropImageView.setImageBitmap(bitmap);
+            mCropImageView.setVisibility(View.VISIBLE);
+            if (isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight)) {
+                mCropImageView.rotateImage(90);
+            } else {
+                mCropImageView.rotateImage(getCameraPhotoOrientation(Uri.parse(path), path));
+            }
+        }catch (Exception e){
+            
         }
         btnlay.setVisibility(View.VISIBLE);
     }
@@ -94,9 +100,10 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         return width > 0 && height > 0 && ((height / width > 2));
     }
 
-    public static boolean isVerticalPanorama(int width, int height){
+    public static boolean isVerticalPanorama(int width, int height) {
         return width > 0 && height > 0 && ((width / height >= 2));
     }
+
     private boolean isRotateShow() {
         if (getIntent().getExtras() != null) {
             return getIntent().getExtras().getBoolean(IMAGE_ROTATE_SHOW, true);
@@ -136,7 +143,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 
     }
 
-    public int getCameraPhotoOrientation(Uri imageUri, String imagePath){
+    public int getCameraPhotoOrientation(Uri imageUri, String imagePath) {
         int rotate = 0;
         try {
             getContentResolver().notifyChange(imageUri, null);
@@ -144,7 +151,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 
             ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
             int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-            Log.d("Orientation = ",orientation+"");
+            Log.d("Orientation = ", orientation + "");
 
             switch (orientation) {
                 case ExifInterface.ORIENTATION_ROTATE_270:
@@ -212,5 +219,5 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
             finish();
         }
     }
-
+    
 }
