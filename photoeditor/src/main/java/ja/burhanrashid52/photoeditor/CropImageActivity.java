@@ -23,6 +23,7 @@ import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_BITMAP;
 
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_CANCEL;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_PATH;
+import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ID;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_SHOW;
 
 public class CropImageActivity extends AppCompatActivity implements View.OnClickListener, CropImageView.OnCropImageCompleteListener, CropImageView.OnSetImageUriCompleteListener {
@@ -32,6 +33,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
     private ImageView btnRotateLeft;
     private ImageView btnRotateRight;
     String path;
+    private long id;
 //    String outputPath;
 
     @Override
@@ -57,6 +59,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         btnRotateLeft.setOnClickListener(this);
         btnRotateRight.setOnClickListener(this);
         path = getIntent().getExtras().getString(IMAGE_PATH);
+        id = getIntent().getExtras().getLong(IMAGE_ID, 0);
 //        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
 //        Uri source = Uri.fromFile((new File(path)));
 
@@ -210,7 +213,12 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 //            Intent intent = new Intent();
 //            intent.putExtra(EXTRA_CROP_IMAGE, destination);
 //            setResult(RESULT_OK, intent);
-            LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
+//             LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
+            if(id == 0){
+                LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
+            }else{
+                LocalMessageManager.getInstance().send((int) id, croppedBitmap);
+            }
             finish();
         } catch (Exception e) {
             Log.d("Exception", e.getStackTrace().toString());
