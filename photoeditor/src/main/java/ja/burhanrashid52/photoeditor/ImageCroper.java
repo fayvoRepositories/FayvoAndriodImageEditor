@@ -12,6 +12,7 @@ public class ImageCroper {
     public static final int EXTRA_CROP_CANCEL = 102;
     public static final String IMAGE_PATH = "image_croper_path";
     public static final String IMAGE_ROTATE_SHOW = "image_rotate";
+    public static final String IMAGE_ID = "id";
     public static final String IMAGE_OUTPUT_PATH = "image_crop_path";
 
     private Activity activity;
@@ -19,6 +20,7 @@ public class ImageCroper {
     private String path;
     private String outputPath;
     private boolean isRotateShow;
+    private long id;
 
     public ImageCroper(CropBuilder cropBuilder) {
         this.activity = cropBuilder.activity;
@@ -26,11 +28,13 @@ public class ImageCroper {
         this.path = cropBuilder.path;
         this.outputPath = cropBuilder.outputPath;
         this.isRotateShow = cropBuilder.isRotateShow;
+        this.id = cropBuilder.id;
 
         if (fragment != null) {
             Intent intent = new Intent(fragment.getActivity(), CropImageActivity.class);
             intent.putExtra(IMAGE_PATH, path);
             intent.putExtra(IMAGE_ROTATE_SHOW, isRotateShow);
+            intent.putExtra(IMAGE_ID, id);
 //            intent.putExtra(IMAGE_OUTPUT_PATH, outputPath);
             fragment.startActivityForResult(intent, CROP_IMAGE_RESULT);
         }
@@ -50,6 +54,7 @@ public class ImageCroper {
         private String path;
         private String outputPath;
         private boolean isRotateShow = true;
+        private long id;
 
         public CropBuilder(String path, String outputPath, Activity activity) {
             this.activity = activity;
@@ -77,6 +82,11 @@ public class ImageCroper {
 
         public CropBuilder setRotateShow(boolean isRotateShow) {
             this.isRotateShow = isRotateShow;
+            return this;
+        }
+
+        public CropBuilder setId(long id) {
+            this.id = id;
             return this;
         }
 
