@@ -60,7 +60,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         btnRotateLeft.setOnClickListener(this);
         btnRotateRight.setOnClickListener(this);
         path = getIntent().getExtras().getString(IMAGE_PATH);
-        rotateAngle = getIntent().getIntExtra(IMAGE_ROTATE_ANGLE, 0);
+        rotateAngle = getIntent().getIntExtra(IMAGE_ROTATE_ANGLE, -1);
 //        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
 //        Uri source = Uri.fromFile((new File(path)));
 
@@ -151,12 +151,16 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         int rotate = 0;
         int orientation = rotateAngle;
         try {
-            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (rotateAngle != -1) {
                 getContentResolver().notifyChange(imageUri, null);
                 File imageFile = new File(imagePath);
-
-                ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
-                orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                ExifInterface exif = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
+                    exif = new ExifInterface(imageFile.getAbsolutePath());
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
+                    orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                }
                 Log.d("Orientation = ", orientation + "");
                 Log.i("RotateImage", "Exif orientation: " + orientation);
             }
