@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,7 +24,7 @@ import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_BITMAP;
 
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_CANCEL;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_PATH;
-import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ID;
+import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_ANGLE;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_SHOW;
 
 public class CropImageActivity extends AppCompatActivity implements View.OnClickListener, CropImageView.OnCropImageCompleteListener, CropImageView.OnSetImageUriCompleteListener {
@@ -33,7 +34,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
     private ImageView btnRotateLeft;
     private ImageView btnRotateRight;
     String path;
-    private long id;
+    private int rotateAngle;
 //    String outputPath;
 
     @Override
@@ -59,7 +60,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         btnRotateLeft.setOnClickListener(this);
         btnRotateRight.setOnClickListener(this);
         path = getIntent().getExtras().getString(IMAGE_PATH);
-        id = getIntent().getExtras().getLong(IMAGE_ID, 0);
+        rotateAngle = getIntent().getIntExtra(IMAGE_ROTATE_ANGLE, 0);
 //        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
 //        Uri source = Uri.fromFile((new File(path)));
 
@@ -93,8 +94,8 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
             } else {
                 mCropImageView.rotateImage(getCameraPhotoOrientation(Uri.parse(path), path));
             }
-        }catch (Exception e){
-            
+        } catch (Exception e) {
+
         }
         btnlay.setVisibility(View.VISIBLE);
     }
@@ -148,13 +149,17 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 
     public int getCameraPhotoOrientation(Uri imageUri, String imagePath) {
         int rotate = 0;
+        int orientation = rotateAngle;
         try {
-            getContentResolver().notifyChange(imageUri, null);
-            File imageFile = new File(imagePath);
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                getContentResolver().notifyChange(imageUri, null);
+                File imageFile = new File(imagePath);
 
-            ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
-            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-            Log.d("Orientation = ", orientation + "");
+                ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
+                orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                Log.d("Orientation = ", orientation + "");
+                Log.i("RotateImage", "Exif orientation: " + orientation);
+            }
 
             switch (orientation) {
                 case ExifInterface.ORIENTATION_ROTATE_270:
@@ -168,7 +173,6 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
                     break;
             }
 
-            Log.i("RotateImage", "Exif orientation: " + orientation);
             Log.i("RotateImage", "Rotate value: " + rotate);
         } catch (Exception e) {
             e.printStackTrace();
@@ -214,11 +218,8 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 //            intent.putExtra(EXTRA_CROP_IMAGE, destination);
 //            setResult(RESULT_OK, intent);
 //             LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
-            if(id == 0){
-                LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
-            }else{
-                LocalMessageManager.getInstance().send((int) id, croppedBitmap);
-            }
+            LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
+
             finish();
         } catch (Exception e) {
             Log.d("Exception", e.getStackTrace().toString());
@@ -227,5 +228,5 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
             finish();
         }
     }
-    
+
 }
