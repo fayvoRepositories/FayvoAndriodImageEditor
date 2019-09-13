@@ -179,7 +179,18 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 
             Log.i("RotateImage", "Rotate value: " + rotate);
         } catch (Exception e) {
-            e.printStackTrace();
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    rotate = 270;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    rotate = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    rotate = 90;
+                    break;
+            }
+
         }
         return rotate;
     }
