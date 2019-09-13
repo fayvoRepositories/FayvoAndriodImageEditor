@@ -42,6 +42,7 @@ public class ImageCroper {
             Intent intent = new Intent(activity, CropImageActivity.class);
             intent.putExtra(IMAGE_PATH, path);
             intent.putExtra(IMAGE_ROTATE_SHOW, isRotateShow);
+            intent.putExtra(IMAGE_ROTATE_ANGLE, rotateAngle);
 //            intent.putExtra(IMAGE_OUTPUT_PATH, outputPath);
             activity.startActivityForResult(intent, CROP_IMAGE_RESULT);
         }
