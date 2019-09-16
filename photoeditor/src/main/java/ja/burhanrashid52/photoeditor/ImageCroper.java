@@ -13,6 +13,7 @@ public class ImageCroper {
     public static final String IMAGE_PATH = "image_croper_path";
     public static final String IMAGE_ROTATE_SHOW = "image_rotate";
     public static final String IMAGE_ROTATE_ANGLE = "rotate";
+    public static final String IMAGE_CROP_ID = "id";
     public static final String IMAGE_OUTPUT_PATH = "image_crop_path";
 
     private Activity activity;
@@ -21,6 +22,7 @@ public class ImageCroper {
     private String outputPath;
     private boolean isRotateShow;
     private int rotateAngle;
+    private long cropId;
 
     public ImageCroper(CropBuilder cropBuilder) {
         this.activity = cropBuilder.activity;
@@ -29,13 +31,14 @@ public class ImageCroper {
         this.outputPath = cropBuilder.outputPath;
         this.isRotateShow = cropBuilder.isRotateShow;
         this.rotateAngle = cropBuilder.rotateAngle;
+        this.cropId = cropBuilder.cropId;
 
         if (fragment != null) {
             Intent intent = new Intent(fragment.getActivity(), CropImageActivity.class);
             intent.putExtra(IMAGE_PATH, path);
             intent.putExtra(IMAGE_ROTATE_SHOW, isRotateShow);
             intent.putExtra(IMAGE_ROTATE_ANGLE, rotateAngle);
-//            intent.putExtra(IMAGE_OUTPUT_PATH, outputPath);
+            intent.putExtra(IMAGE_CROP_ID, cropId);
             fragment.startActivityForResult(intent, CROP_IMAGE_RESULT);
         }
         if (activity != null) {
@@ -43,7 +46,7 @@ public class ImageCroper {
             intent.putExtra(IMAGE_PATH, path);
             intent.putExtra(IMAGE_ROTATE_SHOW, isRotateShow);
             intent.putExtra(IMAGE_ROTATE_ANGLE, rotateAngle);
-//            intent.putExtra(IMAGE_OUTPUT_PATH, outputPath);
+            intent.putExtra(IMAGE_CROP_ID, cropId);
             activity.startActivityForResult(intent, CROP_IMAGE_RESULT);
         }
     }
@@ -56,6 +59,7 @@ public class ImageCroper {
         private String outputPath;
         private boolean isRotateShow = true;
         private int rotateAngle;
+        private long cropId;
 
         public CropBuilder(String path, String outputPath, Activity activity) {
             this.activity = activity;
@@ -88,6 +92,11 @@ public class ImageCroper {
 
         public CropBuilder setRotateAngle(int rotateAngle) {
             this.rotateAngle = rotateAngle;
+            return this;
+        }
+
+        private CropBuilder setCropId(long cropId){
+            this.cropId = cropId;
             return this;
         }
 
