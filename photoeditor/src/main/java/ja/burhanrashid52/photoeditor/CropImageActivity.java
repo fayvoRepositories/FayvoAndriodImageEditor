@@ -23,6 +23,7 @@ import eu.inloop.localmessagemanager.LocalMessageManager;
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_BITMAP;
 
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_CANCEL;
+import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_CROP_ID;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_PATH;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_ANGLE;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_SHOW;
@@ -35,6 +36,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
     private ImageView btnRotateRight;
     String path;
     private int rotateAngle;
+    private long cropId;
 //    String outputPath;
 
     @Override
@@ -61,6 +63,7 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         btnRotateRight.setOnClickListener(this);
         path = getIntent().getExtras().getString(IMAGE_PATH);
         rotateAngle = getIntent().getIntExtra(IMAGE_ROTATE_ANGLE, -1);
+        cropId = getIntent().getLongExtra(IMAGE_CROP_ID, -1);
 //        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
 //        Uri source = Uri.fromFile((new File(path)));
 
@@ -233,7 +236,11 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 //            intent.putExtra(EXTRA_CROP_IMAGE, destination);
 //            setResult(RESULT_OK, intent);
 //             LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
-            LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
+            if(cropId == -1) {
+                LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
+            }else{
+                LocalMessageManager.getInstance().send((int) cropId, croppedBitmap);
+            }
 
             finish();
         } catch (Exception e) {
