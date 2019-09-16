@@ -95,7 +95,7 @@ public class ImageCroper {
             return this;
         }
 
-        private CropBuilder setCropId(long cropId){
+        public CropBuilder setCropId(long cropId){
             this.cropId = cropId;
             return this;
         }
