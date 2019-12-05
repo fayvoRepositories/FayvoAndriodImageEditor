@@ -243,11 +243,13 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
             }
 
             finish();
+            overridePendingTransition(R.anim.exit, R.anim.enter);
         } catch (Exception e) {
             Log.d("Exception", e.getStackTrace().toString());
             LocalMessageManager.getInstance().send(EXTRA_CROP_CANCEL);
             setResult(RESULT_CANCELED);
             finish();
+            overridePendingTransition(R.anim.exit, R.anim.enter);
         }
     }
 
