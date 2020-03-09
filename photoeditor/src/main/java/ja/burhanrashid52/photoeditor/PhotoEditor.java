@@ -804,63 +804,53 @@ public class PhotoEditor implements BrushViewChangeListener {
         } else {
             onSaveListener.onFailure(null);
         }*/
-        parentView.saveFilter(new OnSaveBitmap() {
+       new AsyncTask<String, String, Exception>() {
+
             @Override
-            public void onBitmapReady(Bitmap saveBitmap) {
-                new AsyncTask<String, String, Exception>() {
+            protected void onPreExecute() {
+                super.onPreExecute();
+                clearHelperBox();
+                parentView.setDrawingCacheEnabled(false);
+            }
 
-                    @Override
-                    protected void onPreExecute() {
-                        super.onPreExecute();
-                        clearHelperBox();
-                        parentView.setDrawingCacheEnabled(false);
+            @SuppressLint("MissingPermission")
+            @Override
+            protected Exception doInBackground(String... strings) {
+                // Create a media file name
+                File file = new File(imagePath);
+                try {
+                    FileOutputStream out = new FileOutputStream(file, false);
+                    if (parentView != null) {
+                        parentView.setDrawingCacheEnabled(true);
+                        Bitmap drawingCache = saveSettings.isTransparencyEnabled()
+                                ? BitmapUtil.removeTransparency(parentView.getDrawingCache())
+                                : parentView.getDrawingCache();
+                        drawingCache.compress(Bitmap.CompressFormat.PNG, 100, out);
                     }
+                    out.flush();
+                    out.close();
+                    Log.d(TAG, "Filed Saved Successfully");
+                    return null;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "Failed to save File");
+                    return e;
+                }
+            }
 
-                    @SuppressLint("MissingPermission")
-                    @Override
-                    protected Exception doInBackground(String... strings) {
-                        // Create a media file name
-                        File file = new File(imagePath);
-                        try {
-                            FileOutputStream out = new FileOutputStream(file, false);
-                            if (parentView != null) {
-                                parentView.setDrawingCacheEnabled(true);
-                                Bitmap drawingCache = saveSettings.isTransparencyEnabled()
-                                        ? BitmapUtil.removeTransparency(parentView.getDrawingCache())
-                                        : parentView.getDrawingCache();
-                                drawingCache.compress(Bitmap.CompressFormat.PNG, 100, out);
-                            }
-                            out.flush();
-                            out.close();
-                            Log.d(TAG, "Filed Saved Successfully");
-                            return null;
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Log.d(TAG, "Failed to save File");
-                            return e;
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(Exception e) {
-                        super.onPostExecute(e);
-                        if (e == null) {
-                            //Clear all views if its enabled in save settings
+            @Override
+            protected void onPostExecute(Exception e) {
+                super.onPostExecute(e);
+                if (e == null) {
+                    //Clear all views if its enabled in save settings
 //                            if (saveSettings.isClearViewsEnabled()) clearAllViews();
-                            onSaveListener.onSuccess(imagePath);
-                        } else {
-                            onSaveListener.onFailure(e);
-                        }
-                    }
-
-                }.execute();
+                    onSaveListener.onSuccess(imagePath);
+                } else {
+                    onSaveListener.onFailure(e);
+                }
             }
 
-            @Override
-            public void onFailure(Exception e) {
-                onSaveListener.onFailure(e);
-            }
-        });
+        }.execute();
     }
 
 
