@@ -5,13 +5,15 @@ import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.oginotihiro.cropview.CropUtil;
 import com.theartofdev.edmodo.cropper.CropImageView;
@@ -20,6 +22,7 @@ import java.io.File;
 
 import eu.inloop.localmessagemanager.LocalMessageManager;
 
+import static ja.burhanrashid52.photoeditor.ImageCroper.END_ANIMATION;
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_BITMAP;
 
 import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_CANCEL;
@@ -27,6 +30,7 @@ import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_CROP_ID;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_PATH;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_ANGLE;
 import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_SHOW;
+import static ja.burhanrashid52.photoeditor.ImageCroper.START_ANIMATION;
 
 public class CropImageActivity extends AppCompatActivity implements View.OnClickListener, CropImageView.OnCropImageCompleteListener, CropImageView.OnSetImageUriCompleteListener {
 
@@ -37,6 +41,8 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
     String path;
     private int rotateAngle;
     private long cropId;
+    private int startAnimation = -1;
+    private int endAnimation = -1;
 //    String outputPath;
 
     @Override
@@ -64,6 +70,8 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
         path = getIntent().getExtras().getString(IMAGE_PATH);
         rotateAngle = getIntent().getIntExtra(IMAGE_ROTATE_ANGLE, -1);
         cropId = getIntent().getLongExtra(IMAGE_CROP_ID, -1);
+        startAnimation = getIntent().getIntExtra(START_ANIMATION, -1);
+        endAnimation = getIntent().getIntExtra(END_ANIMATION, -1);
 //        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
 //        Uri source = Uri.fromFile((new File(path)));
 
@@ -236,20 +244,22 @@ public class CropImageActivity extends AppCompatActivity implements View.OnClick
 //            intent.putExtra(EXTRA_CROP_IMAGE, destination);
 //            setResult(RESULT_OK, intent);
 //             LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
-            if(cropId == -1) {
+            if (cropId == -1) {
                 LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
-            }else{
+            } else {
                 LocalMessageManager.getInstance().send((int) cropId, croppedBitmap);
             }
 
             finish();
-            overridePendingTransition(0,0);
+            if (startAnimation != -1 && endAnimation != -1)
+                overridePendingTransition(startAnimation, endAnimation);
         } catch (Exception e) {
             Log.d("Exception", e.getStackTrace().toString());
             LocalMessageManager.getInstance().send(EXTRA_CROP_CANCEL);
             setResult(RESULT_CANCELED);
             finish();
-            overridePendingTransition(0,0);
+            if (startAnimation != -1 && endAnimation != -1)
+                overridePendingTransition(startAnimation, endAnimation);
         }
     }
 
