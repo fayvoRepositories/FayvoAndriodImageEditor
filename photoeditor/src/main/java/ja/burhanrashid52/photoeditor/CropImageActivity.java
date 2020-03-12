@@ -1,265 +1,125 @@
 package ja.burhanrashid52.photoeditor;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.ExifInterface;
-import android.net.Uri;
-import android.os.Build;
+import android.app.Activity;
+import android.content.Intent;
 
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import androidx.fragment.app.Fragment;
 
-import androidx.appcompat.app.AppCompatActivity;
+public class ImageCroper {
 
-import com.oginotihiro.cropview.CropUtil;
-import com.theartofdev.edmodo.cropper.CropImageView;
+    public static final int CROP_IMAGE_RESULT = 100;
+    public static final String EXTRA_CROP_IMAGE = "image_croper_image";
+    public static final int EXTRA_CROP_BITMAP = 101;
+    public static final int EXTRA_CROP_CANCEL = 102;
+    public static final String IMAGE_PATH = "image_croper_path";
+    public static final String IMAGE_ROTATE_SHOW = "image_rotate";
+    public static final String IMAGE_ROTATE_ANGLE = "rotate";
+    public static final String IMAGE_CROP_ID = "id";
+    public static final String START_ANIMATION = "start";
+    public static final String END_ANIMATION = "end";
+    public static final String IMAGE_OUTPUT_PATH = "image_crop_path";
 
-import java.io.File;
-
-import eu.inloop.localmessagemanager.LocalMessageManager;
-
-import static ja.burhanrashid52.photoeditor.ImageCroper.END_ANIMATION;
-import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_BITMAP;
-
-import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_CANCEL;
-import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_CROP_ID;
-import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_PATH;
-import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_ANGLE;
-import static ja.burhanrashid52.photoeditor.ImageCroper.IMAGE_ROTATE_SHOW;
-import static ja.burhanrashid52.photoeditor.ImageCroper.START_ANIMATION;
-
-public class CropImageActivity extends AppCompatActivity implements View.OnClickListener, CropImageView.OnCropImageCompleteListener, CropImageView.OnSetImageUriCompleteListener {
-
-    private CropImageView mCropImageView;
-    private ImageView resultIv;
-    private ImageView btnRotateLeft;
-    private ImageView btnRotateRight;
-    String path;
+    private Activity activity;
+    private Fragment fragment;
+    private String path;
+    private String outputPath;
+    private boolean isRotateShow;
     private int rotateAngle;
     private long cropId;
     private int startAnimation = -1;
     private int endAnimation = -1;
-//    String outputPath;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_crop_image);
-        mCropImageView = findViewById(R.id.cropView);
-        resultIv = findViewById(R.id.resultIv);
+    public ImageCroper(CropBuilder cropBuilder) {
+        this.activity = cropBuilder.activity;
+        this.fragment = cropBuilder.fragment;
+        this.path = cropBuilder.path;
+        this.outputPath = cropBuilder.outputPath;
+        this.isRotateShow = cropBuilder.isRotateShow;
+        this.rotateAngle = cropBuilder.rotateAngle;
+        this.cropId = cropBuilder.cropId;
+        this.startAnimation = cropBuilder.startAnimation;
+        this.endAnimation = cropBuilder.endAnimation;
 
-        btnRotateLeft = findViewById(R.id.btnRotateLeft);
-        btnRotateRight = findViewById(R.id.btnRotateRight);
-        btnRotateLeft.setVisibility(isRotateShow() ? View.VISIBLE : View.GONE);
-        btnRotateRight.setVisibility(isRotateShow() ? View.VISIBLE : View.GONE);
-
-        btnRotateRight.bringToFront();
-        btnRotateLeft.bringToFront();
-        LinearLayout btnlay = findViewById(R.id.btnlay);
-        Button doneBtn = findViewById(R.id.doneBtn);
-        Button cancelBtn = findViewById(R.id.cancelBtn);
-
-        doneBtn.setOnClickListener(this);
-        cancelBtn.setOnClickListener(this);
-        btnRotateLeft.setOnClickListener(this);
-        btnRotateRight.setOnClickListener(this);
-        path = getIntent().getExtras().getString(IMAGE_PATH);
-        rotateAngle = getIntent().getIntExtra(IMAGE_ROTATE_ANGLE, -1);
-        cropId = getIntent().getLongExtra(IMAGE_CROP_ID, -1);
-        startAnimation = getIntent().getIntExtra(START_ANIMATION, -1);
-        endAnimation = getIntent().getIntExtra(END_ANIMATION, -1);
-//        outputPath = getIntent().getExtras().getString(IMAGE_OUTPUT_PATH);
-//        Uri source = Uri.fromFile((new File(path)));
-
-        try {
-            BitmapFactory.Options oldOptions = new BitmapFactory.Options();
-            oldOptions.inJustDecodeBounds = true;
-            Bitmap tempBitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), oldOptions);
-            Bitmap bitmap;
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            if (isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight) || isVerticalPanorama(oldOptions.outWidth, oldOptions.outHeight)) {
-                options.inSampleSize = 8;
-                options.inPreferredConfig = Bitmap.Config.ARGB_4444;
-                options.outWidth = oldOptions.outWidth / 8;
-                bitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), options);
-            } else {
-                if (oldOptions.outWidth > 4000 || oldOptions.outHeight > 4000) {
-                    options.inSampleSize = 4;
-                    options.inPreferredConfig = Bitmap.Config.ARGB_4444;
-                    options.outWidth = oldOptions.outWidth / 2;
-                    options.outHeight = oldOptions.outHeight / 2;
-                    bitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath(), options);
-                } else {
-                    bitmap = BitmapFactory.decodeFile(new File(path).getAbsolutePath());
-                }
-            }
-
-            mCropImageView.setImageBitmap(bitmap);
-            mCropImageView.setVisibility(View.VISIBLE);
-            if (isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight)) {
-                mCropImageView.rotateImage(90);
-            } else {
-                mCropImageView.rotateImage(getCameraPhotoOrientation(Uri.parse(path), path));
-            }
-        } catch (Exception e) {
-
+        if (fragment != null) {
+            Intent intent = new Intent(fragment.getActivity(), CropImageActivity.class);
+            intent.putExtra(IMAGE_PATH, path);
+            intent.putExtra(IMAGE_ROTATE_SHOW, isRotateShow);
+            intent.putExtra(IMAGE_ROTATE_ANGLE, rotateAngle);
+            intent.putExtra(IMAGE_CROP_ID, cropId);
+            intent.putExtra(START_ANIMATION, startAnimation);
+            intent.putExtra(END_ANIMATION, endAnimation);
+            fragment.startActivityForResult(intent, CROP_IMAGE_RESULT);
         }
-        btnlay.setVisibility(View.VISIBLE);
-    }
-
-    public static boolean isPanoramicImage(int width, int height) {
-        return width > 0 && height > 0 && ((height / width > 2));
-    }
-
-    public static boolean isVerticalPanorama(int width, int height) {
-        return width > 0 && height > 0 && ((width / height >= 2));
-    }
-
-    private boolean isRotateShow() {
-        if (getIntent().getExtras() != null) {
-            return getIntent().getExtras().getBoolean(IMAGE_ROTATE_SHOW, true);
-        }
-        return true;
-    }
-
-    @Override
-    public void onClick(View v) {
-        int id = v.getId();
-        if (id == R.id.doneBtn) {
-            mCropImageView.getCroppedImageAsync();
-        } else if (id == R.id.cancelBtn) {
-            onBackPressed();
-        } else if (id == R.id.btnRotateLeft) {
-            mCropImageView.rotateImage(-90);
-        } else if (id == R.id.btnRotateRight) {
-            mCropImageView.rotateImage(90);
+        if (activity != null) {
+            Intent intent = new Intent(activity, CropImageActivity.class);
+            intent.putExtra(IMAGE_PATH, path);
+            intent.putExtra(IMAGE_ROTATE_SHOW, isRotateShow);
+            intent.putExtra(IMAGE_ROTATE_ANGLE, rotateAngle);
+            intent.putExtra(IMAGE_CROP_ID, cropId);
+            intent.putExtra(START_ANIMATION, startAnimation);
+            intent.putExtra(END_ANIMATION, endAnimation);
+            activity.startActivityForResult(intent, CROP_IMAGE_RESULT);
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        LocalMessageManager.getInstance().send(EXTRA_CROP_CANCEL);
-        setResult(RESULT_CANCELED);
-    }
 
-    public String savebitmap(Bitmap bitmapImage) {
-        Uri destination = Uri.fromFile(new File(getCacheDir(), "cropped"));
-        CropUtil.saveOutput(CropImageActivity.this, destination, bitmapImage, 90);
-//        Uri destination = Uri.fromFile(new File(outputPath));
-        boolean isSave = CropUtil.saveOutput(CropImageActivity.this, destination, bitmapImage, 90);
-        if (isSave)
-            return destination.getPath();
-        return path;
+    public static class CropBuilder {
+        private Activity activity;
+        private Fragment fragment;
+        private String path;
+        private String outputPath;
+        private boolean isRotateShow = true;
+        private int rotateAngle;
+        private long cropId;
+        private int startAnimation = -1;
+        private int endAnimation = -1;
 
-    }
-
-    public int getCameraPhotoOrientation(Uri imageUri, String imagePath) {
-        int rotate = 0;
-        int orientation = rotateAngle;
-        try {
-            if (rotateAngle != -1) {
-                getContentResolver().notifyChange(imageUri, null);
-                File imageFile = new File(imagePath);
-                ExifInterface exif = null;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
-                    exif = new ExifInterface(imageFile.getAbsolutePath());
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
-                    orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-                }
-                Log.d("Orientation = ", orientation + "");
-                Log.i("RotateImage", "Exif orientation: " + orientation);
-            }
-
-            switch (orientation) {
-                case ExifInterface.ORIENTATION_ROTATE_270:
-                    rotate = 270;
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_180:
-                    rotate = 180;
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_90:
-                    rotate = 90;
-                    break;
-            }
-
-            Log.i("RotateImage", "Rotate value: " + rotate);
-        } catch (Exception e) {
-            switch (orientation) {
-                case ExifInterface.ORIENTATION_ROTATE_270:
-                    rotate = 270;
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_180:
-                    rotate = 180;
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_90:
-                    rotate = 90;
-                    break;
-            }
-
+        public CropBuilder(String path, String outputPath, Activity activity) {
+            this.activity = activity;
+            this.path = path;
+            this.outputPath = outputPath;
         }
-        return rotate;
-    }
 
+        public CropBuilder(String path, String outputPath, Fragment fragment) {
+            this.fragment = fragment;
+            this.path = path;
+            this.outputPath = outputPath;
+        }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mCropImageView.setOnSetImageUriCompleteListener(this);
-        mCropImageView.setOnCropImageCompleteListener(this);
-    }
+        public CropBuilder(String path, Activity activity) {
+            this.activity = activity;
+            this.path = path;
+            this.outputPath = "";
+        }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mCropImageView.setOnSetImageUriCompleteListener(null);
-        mCropImageView.setOnCropImageCompleteListener(null);
-    }
+        public CropBuilder(String path, Fragment fragment) {
+            this.fragment = fragment;
+            this.path = path;
+            this.outputPath = "";
+        }
 
-    @Override
-    public void onSetImageUriComplete(CropImageView view, Uri uri, Exception error) {
+        public CropBuilder setRotateShow(boolean isRotateShow) {
+            this.isRotateShow = isRotateShow;
+            return this;
+        }
 
-    }
+        public CropBuilder setRotateAngle(int rotateAngle) {
+            this.rotateAngle = rotateAngle;
+            return this;
+        }
 
-    @Override
-    public void onCropImageComplete(CropImageView view, CropImageView.CropResult result) {
-        final Bitmap croppedBitmap = result.getBitmap();
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                resultIv.setImageBitmap(croppedBitmap);
-            }
-        });
-        /*String destination = "";
-        if (!outputPath.equalsIgnoreCase("")) {
-            destination = saveImage(croppedBitmap);
-        }*/
-        try {
-//            Intent intent = new Intent();
-//            intent.putExtra(EXTRA_CROP_IMAGE, destination);
-//            setResult(RESULT_OK, intent);
-//             LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
-            if (cropId == -1) {
-                LocalMessageManager.getInstance().send(EXTRA_CROP_BITMAP, croppedBitmap);
-            } else {
-                LocalMessageManager.getInstance().send((int) cropId, croppedBitmap);
-            }
+        public CropBuilder setCropId(long cropId){
+            this.cropId = cropId;
+            return this;
+        }
 
-            finish();
-            if (startAnimation != -1 && endAnimation != -1)
-                overridePendingTransition(startAnimation, endAnimation);
-        } catch (Exception e) {
-            Log.d("Exception", e.getStackTrace().toString());
-            LocalMessageManager.getInstance().send(EXTRA_CROP_CANCEL);
-            setResult(RESULT_CANCELED);
-            finish();
-            if (startAnimation != -1 && endAnimation != -1)
-                overridePendingTransition(startAnimation, endAnimation);
+        public void  setActivityAnimation(int startAnimation, int endAnimation){
+            this.startAnimation = startAnimation;
+            this.endAnimation = endAnimation;
+        }
+
+        public ImageCroper start() {
+            return new ImageCroper(this);
         }
     }
 
