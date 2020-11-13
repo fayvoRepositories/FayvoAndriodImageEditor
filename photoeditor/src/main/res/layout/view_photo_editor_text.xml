@@ -20,7 +20,9 @@
             android:textSize="18sp"
             android:gravity="center"
             tools:text=""
-            tools:textColor="@android:color/black" />
+            tools:textColor="@android:color/black" 
+            android:layout_gravity="fill"
+            android:baselineAligned="false"/>
 
     </FrameLayout>
 
