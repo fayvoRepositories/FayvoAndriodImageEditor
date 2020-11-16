@@ -1,7 +1,8 @@
 package ja.burhanrashid52.photoeditor;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;

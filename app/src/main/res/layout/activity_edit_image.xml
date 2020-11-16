@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rootView"
@@ -40,7 +40,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"></FrameLayout>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layoutTop"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -52,7 +52,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <android.support.constraint.Guideline
+        <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -112,7 +112,7 @@
             app:layout_constraintStart_toStartOf="@id/layoutTop"
             app:layout_constraintTop_toBottomOf="@+id/guideline" />
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvConstraintTools"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -121,19 +121,19 @@
             android:paddingTop="4dp"
             android:paddingBottom="4dp"
             android:visibility="gone"
-            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toTopOf="@+id/guideline"
             app:layout_constraintEnd_toEndOf="@id/layoutTop"
             app:layout_constraintStart_toStartOf="@id/layoutTop"
             tools:listitem="@layout/row_editing_tools" />
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvFilterView"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:background="@color/tool_bg"
             android:orientation="horizontal"
-            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="@+id/rvConstraintTools"
             app:layout_constraintStart_toEndOf="@id/layoutTop"
             app:layout_constraintTop_toTopOf="@+id/rvConstraintTools"
@@ -174,7 +174,7 @@
             android:layout_marginBottom="32dp"
             app:layout_constraintBottom_toTopOf="@+id/imgRedo"
             app:layout_constraintEnd_toEndOf="@id/layoutTop"
-            app:srcCompat="@drawable/ic_insert_emoticon" />
+            android:src="@drawable/ic_insert_emoticon" />
 
         <ImageView
             android:id="@+id/ivBrush"
@@ -185,7 +185,7 @@
             android:layout_marginBottom="16dp"
             app:layout_constraintBottom_toTopOf="@+id/ivEmoji"
             app:layout_constraintEnd_toEndOf="@id/layoutTop"
-            app:srcCompat="@drawable/ic_brush" />
+            android:src="@drawable/ic_brush" />
 
         <ImageView
             android:id="@+id/ivSticker"
@@ -196,7 +196,7 @@
             android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toTopOf="@+id/ivBrush"
             app:layout_constraintEnd_toEndOf="@id/layoutTop"
-            app:srcCompat="@drawable/ic_sticker"
+            android:src="@drawable/ic_sticker"
             tools:ignore="VectorDrawableCompat" />
 
         <LinearLayout
@@ -217,7 +217,7 @@
                 android:id="@+id/delete"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                app:srcCompat="@drawable/ic_delete_black_24dp" />
+                android:src="@drawable/ic_delete_black_24dp" />
         </LinearLayout>
 
         <ImageView
@@ -229,10 +229,10 @@
             android:layout_marginBottom="16dp"
             app:layout_constraintBottom_toTopOf="@+id/ivDelete"
             app:layout_constraintEnd_toEndOf="parent"
-            app:srcCompat="@drawable/ic_crop" />
+            android:src="@drawable/ic_crop" />
 
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <ImageView
         android:id="@+id/done"
         android:layout_width="36dp"
@@ -242,7 +242,7 @@
         android:layout_marginRight="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/stat_sys_download_done" />
+        android:src="@android:drawable/stat_sys_download_done" />
 
     <ImageView
         android:id="@+id/btnUndo"
@@ -253,7 +253,7 @@
         android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_undo" />
+        android:src="@drawable/ic_undo" />
 
     <LinearLayout
         android:id="@+id/brushLayout"
@@ -283,7 +283,7 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="MissingConstraints" />
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvColors"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -293,7 +293,7 @@
             android:layout_marginBottom="16dp"
             android:background="@android:color/transparent"
             android:orientation="horizontal"
-            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
@@ -302,4 +302,4 @@
             tools:listitem="@layout/color_picker_item_list" />
 
     </LinearLayout>
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

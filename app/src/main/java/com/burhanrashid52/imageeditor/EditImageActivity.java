@@ -13,15 +13,6 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
-import android.support.constraint.ConstraintSet;
-import android.support.transition.ChangeBounds;
-import android.support.transition.TransitionManager;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AnticipateOvershootInterpolator;
@@ -29,8 +20,16 @@ import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.VideoView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.ChangeBounds;
+import androidx.transition.TransitionManager;
 
 import com.burhanrashid52.imageeditor.base.BaseActivity;
 import com.burhanrashid52.imageeditor.filters.FilterListener;
@@ -42,7 +41,6 @@ import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
-import com.nbsp.materialfilepicker.MaterialFilePicker;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -52,11 +50,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import eu.inloop.localmessagemanager.LocalMessage;
-import eu.inloop.localmessagemanager.LocalMessageCallback;
-import eu.inloop.localmessagemanager.LocalMessageManager;
-import ja.burhanrashid52.photoeditor.DragDropOnDragListener;
-import ja.burhanrashid52.photoeditor.ImageCroper;
 import ja.burhanrashid52.photoeditor.ImagePath;
 import ja.burhanrashid52.photoeditor.MultiTouchListener;
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
@@ -67,9 +60,6 @@ import ja.burhanrashid52.photoeditor.SaveSettings;
 import ja.burhanrashid52.photoeditor.ViewType;
 import ja.burhanrashid52.photoeditor.PhotoFilter;
 
-import static ja.burhanrashid52.photoeditor.ImageCroper.CROP_IMAGE_RESULT;
-import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_BITMAP;
-import static ja.burhanrashid52.photoeditor.ImageCroper.EXTRA_CROP_IMAGE;
 
 public class EditImageActivity extends BaseActivity implements OnPhotoEditorListener,
         View.OnClickListener,
@@ -372,7 +362,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     public void onClick(View view) {
         switch (view.getId()) {
 
-            case R.id.icCrop:
+            /*case R.id.icCrop:
                 LocalMessageManager.getInstance().addListener(new LocalMessageCallback() {
                     @Override
                     public void handleMessage(@NonNull LocalMessage localMessage) {
@@ -387,7 +377,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     }
                 });
                 new ImageCroper.CropBuilder(imagePath, this).setRotateShow(false).start();
-                break;
+                break;*/
             case R.id.done:
                 slideDown(brushLayout);
                 break;
@@ -430,14 +420,14 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                         .withHiddenFiles(true) // Show hidden files and folders
                         .start();*/
                 break;
-            case R.id.ivBrush:
+         /*   case R.id.ivBrush:
                 mPhotoEditor.setBrushDrawingMode(true);
 //                mTxtCurrentTool.setText(R.string.label_brush);
                 slideUp(brushLayout);
 //                mPropertiesBSFragment.show(getSupportFragmentManager(), mPropertiesBSFragment.getTag());
                 break;
-
-            case R.id.photoEditorView:
+*/
+            case R.id.ivBrush:
                 mPhotoEditor.setBrushDrawingMode(false);
                 TextEditorDialogFragment textEditorDialogFragment = TextEditorDialogFragment.show(this);
                 textEditorDialogFragment.setOnTextEditorListener(new TextEditorDialogFragment.TextEditor() {
@@ -532,20 +522,11 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
 
             switch (requestCode) {
-                case CROP_IMAGE_RESULT:
-                    try {
-                        mPhotoEditor.clearAllViews();
-                        String uri = data.getStringExtra(EXTRA_CROP_IMAGE);
-                        imagePath = ImagePath.getPath(this, Uri.fromFile(new File(uri)));
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.fromFile(new File(uri)));
-                        mPhotoEditorView.setImageBitmap(bitmap);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    break;
+
                 case CAMERA_REQUEST:
                     mPhotoEditor.clearAllViews();
                     Bitmap photo = (Bitmap) data.getExtras().get("data");
@@ -560,13 +541,13 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     oldOptions.inJustDecodeBounds = true;
                     tempBitmap = BitmapFactory.decodeFile(new File(imagePath).getAbsolutePath(), oldOptions);
                     Bitmap bitmap;
-                    if(isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight)){
+                    if (isPanoramicImage(oldOptions.outWidth, oldOptions.outHeight)) {
                         BitmapFactory.Options options = new BitmapFactory.Options();
                         options.inSampleSize = 8;
                         options.inPreferredConfig = Bitmap.Config.ARGB_4444;
-                        options.outWidth = oldOptions.outWidth/8;
+                        options.outWidth = oldOptions.outWidth / 8;
                         bitmap = BitmapFactory.decodeFile(new File(imagePath).getAbsolutePath(), options);
-                    }else{
+                    } else {
                         bitmap = BitmapFactory.decodeFile(new File(imagePath).getAbsolutePath());
                     }
 //                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);

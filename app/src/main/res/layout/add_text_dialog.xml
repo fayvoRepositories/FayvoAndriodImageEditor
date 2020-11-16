@@ -34,7 +34,7 @@
         android:inputType="textMultiLine"
         android:textSize="40sp" />
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/add_text_color_picker_relative_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -58,20 +58,20 @@
             app:layout_constraintStart_toStartOf="@+id/add_text_color_picker_relative_layout"
             app:layout_constraintTop_toTopOf="@+id/add_text_color_picker_relative_layout" />
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/add_text_color_picker_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
             android:orientation="horizontal"
-            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             tools:background="@android:color/black"
             tools:listitem="@layout/color_picker_item_list" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </RelativeLayout>
