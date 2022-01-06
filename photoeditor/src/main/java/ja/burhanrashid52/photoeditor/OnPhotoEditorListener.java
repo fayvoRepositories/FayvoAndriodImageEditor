@@ -1,5 +1,6 @@
 package ja.burhanrashid52.photoeditor;
 
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -21,7 +22,8 @@ public interface OnPhotoEditorListener {
      * @param text      current text set on the view
      * @param colorCode current color value set on view
      */
-    void onEditTextChangeListener(View rootView, String text, int colorCode, int size);
+    void onEditTextChangeListener(View rootView, String text, int colorCode,float size);
+
 
     /**
      * This is a callback when user adds any view on the {@link PhotoEditorView} it can be
@@ -32,18 +34,6 @@ public interface OnPhotoEditorListener {
      * @see ViewType
      */
     void onAddViewListener(ViewType viewType, int numberOfAddedViews);
-
-
-    /**
-     * This is a callback when user remove any view on the {@link PhotoEditorView} it happens when usually
-     * undo and redo happens or text is removed
-     *
-     * @param numberOfAddedViews number of views currently added
-     * @deprecated Use {@link OnPhotoEditorListener#onRemoveViewListener(ViewType, int)} instead
-     */
-    @Deprecated
-    void onRemoveViewListener(int numberOfAddedViews);
-
 
     /**
      * This is a callback when user remove any view on the {@link PhotoEditorView} it happens when usually
@@ -70,4 +60,11 @@ public interface OnPhotoEditorListener {
      * @param viewType enum which define type of view is added
      */
     void onStopViewChangeListener(ViewType viewType);
+
+    /**
+     * A callback when the user touches the screen.
+     *
+     * @param event the MotionEvent associated to the touch.
+     */
+    void onTouchSourceImage(MotionEvent event);
 }

@@ -42,24 +42,42 @@ public class MultiTouchListener implements OnTouchListener {
     private OnMultiTouchListener onMultiTouchListener;
     private OnGestureControl mOnGestureControl;
     private DragDeleteListener dragDeleteListener;
-    private boolean mIsTextPinchZoomable;
+    private PhotoEditor mPhotoEditor;
+    private boolean mIsPinchScalable;
     private OnPhotoEditorListener mOnPhotoEditorListener;
 
-    private PhotoEditor mPhotoEditor;
+    private PhotoEditorViewState viewState;
     boolean isAnimationWorking = false;
     float lastScaleX = 0;
 
-    MultiTouchListener(@Nullable View deleteView, RelativeLayout parentView,
-                       ImageView photoEditImageView, boolean isTextPinchZoomable,
-                       OnPhotoEditorListener onPhotoEditorListener, PhotoEditor mPhotoEditor, DragDeleteListener dragDeleteListener) {
-        mIsTextPinchZoomable = isTextPinchZoomable;
-        this.dragDeleteListener = dragDeleteListener;
+    MultiTouchListener(@Nullable View deleteView,
+                       RelativeLayout parentView,
+                       ImageView photoEditImageView,
+                       boolean isPinchScalable,
+                       OnPhotoEditorListener onPhotoEditorListener,
+                       PhotoEditorViewState viewState
+    ) {
+
+        this(deleteView, parentView, photoEditImageView, isPinchScalable, onPhotoEditorListener, viewState, null, null);
+    }
+
+    MultiTouchListener(@Nullable View deleteView,
+                       RelativeLayout parentView,
+                       ImageView photoEditImageView,
+                       boolean isPinchScalable,
+                       OnPhotoEditorListener onPhotoEditorListener,
+                       PhotoEditorViewState viewState,
+                       PhotoEditor photoEditor,
+                       DragDeleteListener dragDeleteListener
+    ) {
+        mIsPinchScalable = isPinchScalable;
         mScaleGestureDetector = new ScaleGestureDetector(new ScaleGestureListener());
         mGestureListener = new GestureDetector(new GestureListener());
-        this.mPhotoEditor = mPhotoEditor;
         this.deleteView = deleteView;
         this.parentView = parentView;
         this.photoEditImageView = photoEditImageView;
+        this.dragDeleteListener = dragDeleteListener;
+        this.mPhotoEditor = photoEditor;
         this.mOnPhotoEditorListener = onPhotoEditorListener;
         if (deleteView != null) {
             outRect = new Rect(deleteView.getLeft(), deleteView.getTop(),
@@ -67,6 +85,7 @@ public class MultiTouchListener implements OnTouchListener {
         } else {
             outRect = new Rect(0, 0, 0, 0);
         }
+        this.viewState = viewState;
     }
 
     private static float adjustAngle(float degrees) {
@@ -140,7 +159,10 @@ public class MultiTouchListener implements OnTouchListener {
 
         switch (action & event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                dragDeleteListener.onTouch();
+                dragDeleteListener.onTouchDown();
+                if (mOnGestureControl != null) {
+                    mOnGestureControl.onTouchDown();
+                }
                 if (width == 0) {
                     width = view.getWidth();
                 }
@@ -160,16 +182,15 @@ public class MultiTouchListener implements OnTouchListener {
                 firePhotoEditorSDKListener(view, true);
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.d("Drag ", "ACTION_MOVE");
-                if (deleteView != null) {
-                    deleteView.setVisibility(View.VISIBLE);
-                }
-                int pointerIndexMove = event.findPointerIndex(mActivePointerId);
-                if (pointerIndexMove != -1) {
-                    float currX = event.getX(pointerIndexMove);
-                    float currY = event.getY(pointerIndexMove);
-                    if (!mScaleGestureDetector.isInProgress()) {
-                        adjustTranslation(view, currX - mPrevX, currY - mPrevY);
+                // Only enable dragging on focused stickers.
+                if (view == viewState.getCurrentSelectedView()) {
+                    int pointerIndexMove = event.findPointerIndex(mActivePointerId);
+                    if (pointerIndexMove != -1) {
+                        float currX = event.getX(pointerIndexMove);
+                        float currY = event.getY(pointerIndexMove);
+                        if (!mScaleGestureDetector.isInProgress()) {
+                            adjustTranslation(view, currX - mPrevX, currY - mPrevY);
+                        }
                     }
                 }
                 dragDeleteListener.onMove();
@@ -188,22 +209,20 @@ public class MultiTouchListener implements OnTouchListener {
                         scaleDraggedView(view, false);
                     }
                 }
-
                 break;
             case MotionEvent.ACTION_CANCEL:
-                dragDeleteListener.onDragStop();
-                scaleDraggedView(view, false);
-                Log.d("Drag ", "ACTION_CANCEL");
+                dragDeleteListener.onTouchUp();
                 if (deleteView != null) {
                     deleteView.setVisibility(View.VISIBLE);
                 }
                 mActivePointerId = INVALID_POINTER_ID;
-
                 break;
             case MotionEvent.ACTION_UP:
-                dragDeleteListener.onDragStop();
+                dragDeleteListener.onTouchUp();
+                if (mOnGestureControl != null) {
+                    mOnGestureControl.onTouchUp();
+                }
                 scaleDraggedView(view, false);
-                Log.d("Drag ", "ACTION_UP");
                 mActivePointerId = INVALID_POINTER_ID;
                 if (deleteView != null && isViewInBounds(deleteView, x, y)) {
                     if (onMultiTouchListener != null)
@@ -211,7 +230,6 @@ public class MultiTouchListener implements OnTouchListener {
                 } else if (!isViewInBounds(photoEditImageView, x, y)) {
                     view.animate().translationY(0).translationY(0);
                 }
-
                 firePhotoEditorSDKListener(view, false);
                 if (deleteView != null) {
                     final Rect imageViewArea = new Rect();
@@ -227,9 +245,8 @@ public class MultiTouchListener implements OnTouchListener {
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
-                dragDeleteListener.onDragStop();
+                dragDeleteListener.onTouchUp();
                 scaleDraggedView(view, false);
-                Log.d("Drag ", "ACTION_POINTER_UP");
                 int pointerIndexPointerUp = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                 int pointerId = event.getPointerId(pointerIndexPointerUp);
                 if (pointerId == mActivePointerId) {
@@ -244,7 +261,7 @@ public class MultiTouchListener implements OnTouchListener {
                 break;
             default:
                 scaleDraggedView(view, false);
-                dragDeleteListener.onDragStop();
+                dragDeleteListener.onTouchUp();
                 break;
         }
         return true;
@@ -327,7 +344,7 @@ public class MultiTouchListener implements OnTouchListener {
             mPivotX = detector.getFocusX();
             mPivotY = detector.getFocusY();
             mPrevSpanVector.set(detector.getCurrentSpanVector());
-            return mIsTextPinchZoomable;
+            return mIsPinchScalable;
         }
 
         @Override
@@ -342,11 +359,11 @@ public class MultiTouchListener implements OnTouchListener {
             info.minimumScale = minimumScale;
             info.maximumScale = maximumScale;
             move(view, info);
-            return !mIsTextPinchZoomable;
+            return !mIsPinchScalable;
         }
     }
 
-    public class TransformInfo {
+    private class TransformInfo {
         float deltaX;
         float deltaY;
         float deltaScale;
@@ -363,19 +380,22 @@ public class MultiTouchListener implements OnTouchListener {
         void onRemoveViewListener(View removedView);
     }
 
-    interface OnGestureControl {
+    interface OnGestureControl extends BaseTouchListener {
+
         void onClick();
 
         void onLongClick();
+
     }
 
-
-    public interface DragDeleteListener {
+    public interface DragDeleteListener extends BaseTouchListener {
         void onMove();
+    }
 
-        void onTouch();
+    private interface BaseTouchListener {
+        void onTouchDown();
 
-        void onDragStop();
+        void onTouchUp();
     }
 
     void setOnGestureControl(OnGestureControl onGestureControl) {

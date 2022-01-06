@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -19,7 +18,7 @@ import androidx.annotation.RequiresApi;
 
 /**
  * <p>
- * This ViewGroup will have the {@link BrushDrawingView} to draw paint on it with {@link ImageView}
+ * This ViewGroup will have the {@link DrawingView} to draw paint on it with {@link ImageView}
  * which our source image
  * </p>
  *
@@ -33,9 +32,10 @@ public class PhotoEditorView extends RelativeLayout {
     private static final String TAG = "PhotoEditorView";
 
     private FilterImageView mImgSource;
-    private BrushDrawingView mBrushDrawingView;
+    private DrawingView mDrawingView;
     private ImageFilterView mImageFilterView;
-    private static final int imgSrcId = 1, brushSrcId = 2, glFilterId = 3;
+    private boolean clipSourceImage;
+    private static final int imgSrcId = 1, shapeSrcId = 2, glFilterId = 3;
 
     public PhotoEditorView(Context context) {
         super(context);
@@ -58,15 +58,45 @@ public class PhotoEditorView extends RelativeLayout {
         init(attrs);
     }
 
-    @SuppressLint("Recycle")
     private void init(@Nullable AttributeSet attrs) {
         //Setup image attributes
         mImgSource = new FilterImageView(getContext());
+        RelativeLayout.LayoutParams sourceParam = setupImageSource(attrs);
+
+        mImgSource.setOnImageChangedListener(new FilterImageView.OnImageChangedListener() {
+            @Override
+            public void onBitmapLoaded(@Nullable Bitmap sourceBitmap) {
+                mImageFilterView.setFilterEffect(PhotoFilter.NONE);
+                mImageFilterView.setSourceBitmap(sourceBitmap);
+                Log.d(TAG, "onBitmapLoaded() called with: sourceBitmap = [" + sourceBitmap + "]");
+            }
+        });
+
+        //Setup GLSurface attributes
+        mImageFilterView = new ImageFilterView(getContext());
+        RelativeLayout.LayoutParams filterParam = setupFilterView();
+
+        //Setup drawing view
+        mDrawingView = new DrawingView(getContext());
+        RelativeLayout.LayoutParams brushParam = setupDrawingView();
+
+        //Add image source
+        addView(mImgSource, sourceParam);
+
+        //Add Gl FilterView
+        addView(mImageFilterView, filterParam);
+
+        //Add brush view
+        addView(mDrawingView, brushParam);
+    }
+
+
+    @SuppressLint("Recycle")
+    private RelativeLayout.LayoutParams setupImageSource(@Nullable AttributeSet attrs) {
         mImgSource.setId(imgSrcId);
         mImgSource.setAdjustViewBounds(true);
-        RelativeLayout.LayoutParams imgSrcParam = new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        imgSrcParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        mImgSource.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+
         if (attrs != null) {
             TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.PhotoEditorView);
             Drawable imgSrcDrawable = a.getDrawable(R.styleable.PhotoEditorView_photo_src);
@@ -75,48 +105,46 @@ public class PhotoEditorView extends RelativeLayout {
             }
         }
 
-        //Setup brush view
-        mBrushDrawingView = new BrushDrawingView(getContext());
-        mBrushDrawingView.setVisibility(GONE);
-        mBrushDrawingView.setId(brushSrcId);
-        //Align brush to the size of image view
-        RelativeLayout.LayoutParams brushParam = new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        brushParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-        brushParam.addRule(RelativeLayout.ALIGN_TOP, imgSrcId);
-        brushParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId);
+        int widthParam = ViewGroup.LayoutParams.MATCH_PARENT;
+        if (clipSourceImage) {
+            widthParam = ViewGroup.LayoutParams.WRAP_CONTENT;
+        }
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                widthParam, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
 
-        //Setup GLSurface attributes
-        mImageFilterView = new ImageFilterView(getContext());
-        mImageFilterView.setId(glFilterId);
+        return params;
+    }
+
+
+    private RelativeLayout.LayoutParams setupDrawingView() {
+        mDrawingView.setVisibility(GONE);
+        mDrawingView.setId(shapeSrcId);
+
+        // Align drawing view to the size of image view
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        params.addRule(RelativeLayout.ALIGN_TOP, imgSrcId);
+        params.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId);
+        params.addRule(RelativeLayout.ALIGN_LEFT, imgSrcId);
+        params.addRule(RelativeLayout.ALIGN_RIGHT, imgSrcId);
+        return params;
+    }
+
+
+    private RelativeLayout.LayoutParams setupFilterView() {
         mImageFilterView.setVisibility(GONE);
+        mImageFilterView.setId(glFilterId);
 
         //Align brush to the size of image view
-        RelativeLayout.LayoutParams imgFilterParam = new RelativeLayout.LayoutParams(
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        imgFilterParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-        imgFilterParam.addRule(RelativeLayout.ALIGN_TOP, imgSrcId);
-        imgFilterParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId);
+        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        params.addRule(RelativeLayout.ALIGN_TOP, imgSrcId);
+        params.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId);
 
-        mImgSource.setOnImageChangedListener(new FilterImageView.OnImageChangedListener() {
-            @Override
-            public void onBitmapLoaded(@Nullable Bitmap sourceBitmap) {
-//                mImageFilterView.setFilterEffect(PhotoFilter.NONE);
-                mImageFilterView.setSourceBitmap(sourceBitmap);
-                Log.d(TAG, "onBitmapLoaded() called with: sourceBitmap = [" + sourceBitmap + "]");
-            }
-        });
-
-
-        //Add image source
-        addView(mImgSource, imgSrcParam);
-
-        //Add Gl FilterView
-        addView(mImageFilterView, imgFilterParam);
-
-        //Add brush view
-        addView(mBrushDrawingView, brushParam);
-
+        return params;
     }
 
 
@@ -129,25 +157,10 @@ public class PhotoEditorView extends RelativeLayout {
         return mImgSource;
     }
 
-    BrushDrawingView getBrushDrawingView() {
-        return mBrushDrawingView;
+    DrawingView getDrawingView() {
+        return mDrawingView;
     }
 
-    public void setImageDrawable(Drawable drawable){
-        mImgSource.setImageDrawable(drawable);
-    }
-
-    public void setImageBitmap(Bitmap bitmap){
-        mImgSource.setImageBitmap(bitmap);
-    }
-
-    public void setImageDrawable(int resId){
-        mImgSource.setImageResource(resId);
-    }
-
-    public void setImageDrawable(Uri uri){
-        mImgSource.setImageURI(uri);
-    }
 
     void saveFilter(@NonNull final OnSaveBitmap onSaveBitmap) {
         if (mImageFilterView.getVisibility() == VISIBLE) {
@@ -168,8 +181,6 @@ public class PhotoEditorView extends RelativeLayout {
         } else {
             onSaveBitmap.onBitmapReady(mImgSource.getBitmap());
         }
-
-
     }
 
     void setFilterEffect(PhotoFilter filterType) {
@@ -183,4 +194,12 @@ public class PhotoEditorView extends RelativeLayout {
         mImageFilterView.setSourceBitmap(mImgSource.getBitmap());
         mImageFilterView.setFilterEffect(customEffect);
     }
+
+    void setClipSourceImage(boolean clip) {
+        clipSourceImage = clip;
+        RelativeLayout.LayoutParams param = setupImageSource(null);
+        mImgSource.setLayoutParams(param);
+    }
+
+    // endregion
 }
